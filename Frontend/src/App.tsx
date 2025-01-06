@@ -11,7 +11,7 @@ function App() {
   return (
     <BrowserRouter>
     <Routes>
-      <Route path="/home" element={<Home />} />
+      <Route path="/" element={<Home />} />
       <Route path="/qibble/public" element={<Public />} />
       <Route path="/qibble/private" element={<Private />} />
       <Route path="/qibble/lobby" element={<Lobby />} />
