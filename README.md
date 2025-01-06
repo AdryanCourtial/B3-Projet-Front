@@ -11,7 +11,9 @@
             {
                 "pseudo": "",
                 "role": ROLES,
-                "uuid": ""
+                "uuid": "",
+                "points": 0 | null, 
+                "alive": true | null
             }
         ],
         "options": {
@@ -24,3 +26,9 @@
 ]
 
 ```
+
+Convention : 
+- Fonction : PascalCase
+- Variable : snake_case
+- Constant : UPPERCASE
+- lang : Anglais
