@@ -6,7 +6,7 @@
     {
         "name" : "",
         "room_id" : "",
-        "password": "" | null,
+        "room_pin":  "",
         "users": [
             {
                 "pseudo": "",
