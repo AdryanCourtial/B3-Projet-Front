@@ -16,7 +16,7 @@
                 "alive": true | null
             }
         ],
-        "options": {
+        "options": {    
             "limit": 0,
             "category": CATEGORY,
             "difficulty": DIFFICULTY,
