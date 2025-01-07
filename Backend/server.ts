@@ -1,7 +1,14 @@
 import express from 'express';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { createServer } from 'http';
 import { userInfo } from 'os';
+import { Room } from './types/room.interface';
+import { QuizParams } from './types/quizParameter.interface';
+import { VerifQuizInput } from './utils/inputsVerfication';
+import { z } from 'zod';
+import axios from 'axios';
+import { type Categories } from './types/quizParameter.interface';
+import { getEnabledCategories } from 'trace_events';
 
 const app = express();
 const server = createServer(app); // http
@@ -14,35 +21,13 @@ const io = new Server(server, {
 });
 
 // Définition des types pour les utilisateurs et les rooms
-interface User {
-  pseudo: string;
-  role: string;
-  uuid: string; 
-  points: number;
-  alive: boolean;
-}
-
-interface QuizParams {
-  limit: number;
-  category: string;
-  difficulty: string;
-  gamemode: string;
-}
-
-interface Room {
-  name: string;
-  room_id: string;
-  room_pin: string | null; 
-  users: User[];
-  options: QuizParams;
-}
 
 // Stocker les rooms avec leurs paramètres et les utilisateurs
 let rooms: { [roomId: string]: Room } = {}; 
 
 // Lorsqu'un utilisateur se connecte
 io.on('connection', (socket) => {
-  console.log('Un utilisateur est connecté', socket.id);
+  // console.log('Un utilisateur est connecté', socket.id);
 
   // Quand un utilisateur crée une room
   socket.on('createRoom', (roomId: string, pseudo: string, quizParams: QuizParams, isPrivate: boolean) => {
@@ -66,9 +51,9 @@ io.on('connection', (socket) => {
       options: quizParams     // Options du quiz
     };
 
-    console.log(rooms[roomId].users);
+    // console.log(rooms[roomId].users);
     socket.join(roomId); // Ajouter l'utilisateur à la room
-    console.log(`${pseudo} a créé la room ${roomId} avec les paramètres`, quizParams);
+    // console.log(`${pseudo} a créé la room ${roomId} avec les paramètres`, quizParams);
 
       io.to(roomId).emit('message', `${pseudo} a créé la room avec les paramètres: ${JSON.stringify(quizParams)}`);
     socket.emit('roomCreated', { roomId, roomPin, pseudo });
@@ -94,7 +79,7 @@ io.on('connection', (socket) => {
         alive: true
       });
       socket.join(roomId);
-      console.log(`${pseudo} a rejoint la room ${roomId}`);
+      // console.log(`${pseudo} a rejoint la room ${roomId}`);
 
       // Envoyer les informations du quiz à l'utilisateur qui rejoint
       socket.emit('startQuiz', room.options);
@@ -150,7 +135,7 @@ io.on('connection', (socket) => {
       });
 
       socket.join(roomFound.room_id); // Ajouter l'utilisateur à la room via Socket.io
-      console.log(`${pseudo} a rejoint la room ${roomFound.room_id}`);
+      // console.log(`${pseudo} a rejoint la room ${roomFound.room_id}`);
 
       // Informer l'utilisateur que la room a démarré
       socket.emit('startQuiz', roomFound.options);
@@ -170,7 +155,7 @@ io.on('connection', (socket) => {
     
   // Lorsqu'un utilisateur se déconnecte
   socket.on('disconnect', () => {
-    console.log('Un utilisateur s\'est déconnecté', socket.id);
+    // console.log('Un utilisateur s\'est déconnecté', socket.id);
 
     // Rechercher la room à laquelle l'utilisateur appartient
     for (let roomId in rooms) {
@@ -192,8 +177,36 @@ io.on('connection', (socket) => {
       }
     }
   });
-});
 
+  socket.on('getQuestions', (data: QuizParams) => {
+
+    const {category, difficulty, gamemode, limit } = data
+
+    const QuizParams: any = {
+      category : category,
+      difficulty : difficulty,
+      gamemode : gamemode,
+      limit : limit,
+    }
+
+    const VerifQuizInput = z.object({
+      category: z.string(),
+      difficulty: z.string(),
+      gamemode: z.string(),
+      limit: z.number()
+    })
+
+    VerifQuizInput.parse(QuizParams)
+
+
+    axios({
+      method: 'GET',
+      url: `https://quizzapi.jomoreschi.fr/api/v1/quiz?category=${QuizParams.category}&difficulty=${QuizParams.difficulty}&limit=${QuizParams.limit}`,
+    }).then((response) => {
+      socket.emit('dataResponseQuiz', response.data);    
+    })
+  })
+});
 // Lancer le serveur
 server.listen(4000, () => {
   console.log('Serveur démarré sur http://localhost:4000');
