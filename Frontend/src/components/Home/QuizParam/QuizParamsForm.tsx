@@ -1,5 +1,5 @@
 import React from 'react';
-import { QuizParams } from '../Home';
+import { QuizParams } from '../../../types/quiz.type';
 
 interface QuizParamsFormProps {
   quizParams: QuizParams;

@@ -1,25 +1,12 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import RoomForm from './RoomForm/RoomForm';
-import QuizParamsForm from './QuizParam/QuizParamsForm';
 import RoomList from './RoomList/RoomListPublic';
 import UserList from './UserList/UserList';
-import EnterPinForm from './RoomList/EnterPinForm';  // Importer le nouveau composant
-
-export interface QuizParams {
-  limit: number;
-  category: string;
-  difficulty: string;
-  gamemode: string;
-}
-
-export interface Room {
-  roomId: string;
-  roomPin: string | null;
-  quizParams: QuizParams;
-  users: { pseudo: string, socketId: string }[];
-  usersCount: number;
-}
+import EnterPinForm from './RoomList/EnterPinForm';  
+import { type QuizParams } from '../../types/quiz.type';
+import { type Room } from '../../types/room.type';
+import Header from '../Global/Header/Header';
+import CreateRoomForm from './CreateQuiz/CreateRoomForm';
 
 const socket = io('http://localhost:4000'); // Connexion au serveur
 
@@ -38,22 +25,23 @@ const QuizApp = () => {
   const [isInRoom, setIsInRoom] = useState<boolean>(false); // Pour savoir si l'utilisateur est dans une room
   const [isPrivate, setIsPrivate] = useState<boolean>(false); // Si la room est privée
   const [roomPinDisplay, setRoomPinDisplay] = useState<string | null>(''); // Pin à afficher après création
+  const [isCreatingRoom, setIsCreatingRoom] = useState<boolean>(false);  // Gérer l'affichage du formulaire de création
+  const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);  // Gérer l'affichage du formulaire de rejoindre
 
   const createRoom = () => {
     socket.emit('createRoom', roomId, pseudo, quizParams, isPrivate);
     setIsInRoom(true); // Passer à l'interface de la room
   };
 
-  const joinRoom = (roomId: string, pin: string | null) => {
-    socket.emit('joinRoom', roomId, pseudo, pin);
+  const joinRoom = (roomId: string, pseudo: string) => {
+    socket.emit('joinRoom', roomId, pseudo, null);
     setIsInRoom(true); // Passer à l'interface de la room
   };
 
-  // Fonction pour gérer la connexion via le PIN
-    const joinRoomByPin = (enteredPin: string) => {
-      console.log('je suis le pin envoyé au server', enteredPin)
-        socket.emit('joinRoomByPin', enteredPin, pseudo);
-        setIsInRoom(true);  
+  const joinRoomByPin = (enteredPin: string) => {
+    console.log('je suis le pin envoyé au server', enteredPin)
+    socket.emit('joinRoomByPin', enteredPin, pseudo);
+    setIsInRoom(true);  
   };
 
   const getRooms = () => {
@@ -64,6 +52,12 @@ const QuizApp = () => {
     socket.on('availableRooms', (rooms: Room[]) => {
       setAvailableRooms(rooms);
     });
+
+    socket.on('roomJoined', (data: { roomId: string, users: { pseudo: string }[] }) => {
+      setRoomId(data.roomId);
+      setUsersInRoom(data.users.map(user => user.pseudo)); // Mettre à jour la liste des utilisateurs
+    });
+
 
     socket.on('message', (data: string) => {
       setMessage(data);
@@ -78,7 +72,6 @@ const QuizApp = () => {
       setUsersInRoom(users.map(user => user.pseudo));  // Mettre à jour la liste des utilisateurs dans la room
     });
 
-    // Écouter la réponse après tentative de rejoindre une room avec un PIN
     socket.on('joinRoomResponse', (success: boolean, message: string) => {
       if (success) {
         setIsInRoom(true);  // Passer à l'interface de la room
@@ -90,35 +83,63 @@ const QuizApp = () => {
     return () => {
       socket.off('availableRooms');
       socket.off('message');
+      socket.off('roomJoined');
       socket.off('updateUsers');
       socket.off('roomCreated');
       socket.off('joinRoomResponse');
     };
   }, []);
 
+  const handleJoinRoomClick = () => {
+    setIsJoiningRoom(true); // Afficher le formulaire pour entrer le pseudo et le PIN
+  };
+
+  const handleCreateRoomClick = () => {
+    setIsCreatingRoom(true); // Afficher le formulaire de création de la room
+  };
+
   return (
     <div>
-      <h1>Quiz App</h1>
+      <Header/>
 
       {!isInRoom ? (
         <>
-          <RoomForm 
-            pseudo={pseudo} 
-            setPseudo={setPseudo} 
-            roomId={roomId} 
-            setRoomId={setRoomId} 
-            isPrivate={isPrivate} 
-            setIsPrivate={setIsPrivate} 
-            createRoom={createRoom}
-          />
-          
-          <QuizParamsForm quizParams={quizParams} setQuizParams={setQuizParams} />
-          
+          {/* Choisir si on veut rejoindre ou créer une room */}
+          <button onClick={handleJoinRoomClick}>Rejoindre une room privé</button>
+          <button onClick={handleCreateRoomClick}>Créer une room</button>
+
+          {isJoiningRoom && (
+            <>
+              <div>
+                <input 
+                  type="text" 
+                  placeholder="Entrez votre pseudo" 
+                  value={pseudo} 
+                  onChange={(e) => setPseudo(e.target.value)} 
+                />
+                <EnterPinForm joinRoomByPin={joinRoomByPin} />
+              </div>
+            </>
+          )}
+
+          {isCreatingRoom && (
+            <>
+              <CreateRoomForm 
+                pseudo={pseudo} 
+                setPseudo={setPseudo} 
+                roomId={roomId} 
+                setRoomId={setRoomId} 
+                isPrivate={isPrivate} 
+                setIsPrivate={setIsPrivate} 
+                quizParams={quizParams} 
+                setQuizParams={setQuizParams} 
+                createRoom={createRoom}
+              />
+            </>
+          )}
+
           <button onClick={getRooms}>Voir les rooms</button>
           <RoomList availableRooms={availableRooms} joinRoom={joinRoom} />
-          
-          {/* Formulaire pour entrer le PIN */}
-          <EnterPinForm joinRoomByPin={joinRoomByPin} />
 
           <p>{message}</p>
         </>

@@ -104,6 +104,9 @@ io.on('connection', (socket) => {
 
       // Mettre à jour la liste des utilisateurs dans la room
       io.to(roomId).emit('updateUsers', room.users);
+
+        socket.emit('roomJoined', { roomId: room.name, users: room.users });
+
     } else {
       socket.emit('error', 'La room n\'existe pas.');
     }
