@@ -34,7 +34,7 @@ const QuizApp = () => {
   };
 
   const joinRoom = (roomId: string, pseudo: string) => {
-    socket.emit('joinRoom', roomId, pseudo, null);
+    socket.emit('joinRoom', roomId, pseudo);
     setIsInRoom(true); // Passer à l'interface de la room
   };
 

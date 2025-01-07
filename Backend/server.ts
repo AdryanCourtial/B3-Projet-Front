@@ -76,14 +76,11 @@ io.on('connection', (socket) => {
   });
 
   // Quand un utilisateur rejoint une room
-  socket.on('joinRoom', (roomId: string, pseudo: string, roomPin: string | null) => {
+  socket.on('joinRoom', (roomId: string, pseudo: string) => {
     const room = rooms[roomId];
     
     if (room) {
-      if (room.room_pin && room.room_pin !== roomPin) {
-        socket.emit('error', 'Pin incorrect ou manquant pour la room privée.');
-        return;
-      }
+      
 
       // Ajouter l'utilisateur à la room
       room.users.push({
@@ -163,6 +160,8 @@ io.on('connection', (socket) => {
 
       // Mettre à jour la liste des utilisateurs dans la room
       io.to(roomFound.room_id).emit('updateUsers', roomFound.users);
+        socket.emit('roomJoined', { roomId: roomFound.name, users: roomFound.users });
+
 
     } else {
       // Si aucune room n'a été trouvée avec ce PIN, renvoyer une erreur
