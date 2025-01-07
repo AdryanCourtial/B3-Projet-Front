@@ -14,7 +14,8 @@ const EnterPseudoForm: React.FC<EnterPseudoFormProps> = ({ pseudo, setPseudo, on
       <input 
         type="text" 
         placeholder="Votre pseudo"
-        value={pseudo} 
+        value={pseudo}
+        required
         onChange={(e) => setPseudo(e.target.value)} 
       />
       <button onClick={onSubmit} disabled={!pseudo.trim()}>Rejoindre</button>

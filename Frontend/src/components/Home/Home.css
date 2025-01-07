@@ -1,0 +1,100 @@
+/* Home.css */
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background-color: var(--main-white);
+}
+
+.home-content {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    box-shadow: var(--drop-shadow);
+    background-color: var(--main-white);
+    border-radius: 8px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 2rem;
+}
+
+.buttons button {
+    padding: 1rem 2rem;
+    background-color: var(--main-blue);
+    color: var(--main-white);
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.buttons button:hover {
+    background-color: var(--main-green);
+}
+
+/* Style pour le formulaire de rejoindre une room */
+.join-room-form input {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    border: 1px solid var(--main-black);
+}
+
+.join-room-form button {
+    background-color: var(--main-blue);
+    color: var(--main-white);
+    padding: 0.8rem 1.5rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.join-room-form button:disabled {
+    background-color: gray;
+}
+
+/* Style de la room list */
+.room-list {
+    margin-top: 2rem;
+}
+
+.room-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.room-list li {
+    background-color: var(--main-purple);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--drop-shadow);
+}
+
+/* Style de la liste des utilisateurs */
+.user-list {
+    margin-top: 2rem;
+}
+
+.user-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.user-list li {
+    background-color: var(--main-purple);
+    color: var(--main-white);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}

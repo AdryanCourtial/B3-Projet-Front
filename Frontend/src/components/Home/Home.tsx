@@ -2,17 +2,19 @@ import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import RoomList from './RoomList/RoomListPublic';
 import UserList from './UserList/UserList';
-import EnterPinForm from './RoomList/EnterPinForm';  
+import EnterPinForm from './RoomList/EnterPinForm';
 import { type QuizParams } from '../../types/quiz.type';
 import { type Room } from '../../types/room.type';
 import Header from '../Global/Header/Header';
 import CreateRoomForm from './CreateQuiz/CreateRoomForm';
+import Game from '../Game/Game';
+import './Home.css';  // Importer le fichier CSS
 
-const socket = io('http://localhost:4000'); // Connexion au serveur
+const socket = io('http://localhost:4000');
 
 const QuizApp = () => {
   const [pseudo, setPseudo] = useState<string>('');  // Le pseudo de l'utilisateur
-  const [roomId, setRoomId] = useState<string>('');  // L'ID de la room
+  const [roomId, setRoomId] = useState<string>(''); 
   const [quizParams, setQuizParams] = useState<QuizParams>({
     limit: 5,
     category: 'tv_cinema',
@@ -21,12 +23,12 @@ const QuizApp = () => {
   });
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]); // Liste des rooms disponibles
   const [message, setMessage] = useState<string>('');  // Message du serveur
-  const [usersInRoom, setUsersInRoom] = useState<string[]>([]);  // Liste des utilisateurs dans la room
+  const [usersInRoom, setUsersInRoom] = useState<{ pseudo: string, role: string }[]>([]); // Utilisateurs et rôles
   const [isInRoom, setIsInRoom] = useState<boolean>(false); // Pour savoir si l'utilisateur est dans une room
   const [isPrivate, setIsPrivate] = useState<boolean>(false); // Si la room est privée
   const [roomPinDisplay, setRoomPinDisplay] = useState<string | null>(''); // Pin à afficher après création
-  const [isCreatingRoom, setIsCreatingRoom] = useState<boolean>(false);  // Gérer l'affichage du formulaire de création
-  const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);  // Gérer l'affichage du formulaire de rejoindre
+  const [currentView, setCurrentView] = useState<string>(''); 
+
 
   const createRoom = () => {
     socket.emit('createRoom', roomId, pseudo, quizParams, isPrivate);
@@ -48,16 +50,20 @@ const QuizApp = () => {
     socket.emit('getRooms');
   };
 
+  const startGame = () => {
+    socket.emit('startGame', roomId);
+    setCurrentView('game'); 
+  };
+
   useEffect(() => {
     socket.on('availableRooms', (rooms: Room[]) => {
       setAvailableRooms(rooms);
     });
 
-    socket.on('roomJoined', (data: { roomId: string, users: { pseudo: string }[] }) => {
+    socket.on('roomJoined', (data: { roomId: string, users: { pseudo: string, role: string }[] }) => {
       setRoomId(data.roomId);
-      setUsersInRoom(data.users.map(user => user.pseudo)); // Mettre à jour la liste des utilisateurs
+      setUsersInRoom(data.users);
     });
-
 
     socket.on('message', (data: string) => {
       setMessage(data);
@@ -65,20 +71,38 @@ const QuizApp = () => {
 
     socket.on('roomCreated', ({ roomId, roomPin }) => {
       console.log(`Room créée: ${roomId}`);
-      setRoomPinDisplay(roomPin); // Afficher le pin si la room est privée
+      setRoomPinDisplay(roomPin); 
     });
 
-    socket.on('updateUsers', (users: { pseudo: string, socketId: string }[]) => {
-      setUsersInRoom(users.map(user => user.pseudo));  // Mettre à jour la liste des utilisateurs dans la room
+    socket.on('updateUsers', (users: { pseudo: string, socketId: string, role: string }[]) => {
+      setUsersInRoom(users); 
     });
 
     socket.on('joinRoomResponse', (success: boolean, message: string) => {
       if (success) {
-        setIsInRoom(true);  // Passer à l'interface de la room
+        setIsInRoom(true);  
       } else {
-        alert(message);  // Afficher un message d'erreur si le PIN n'est pas valide
+        alert(message); 
       }
     });
+
+    socket.on('gameStarted', () => {
+      setCurrentView('game');
+    });
+
+    socket.on('hostChanged', (newHostPseudo) => {
+          console.log(`Le nouveau hôte est : ${newHostPseudo}`);
+          setUsersInRoom(prevUsers => {
+            return prevUsers.map(user => {
+              if (user.pseudo === newHostPseudo) {
+                user.role = 'host';
+              } else if (user.role === 'host') {
+                user.role = 'player';
+              }
+              return user;
+            });
+          });
+        });
 
     return () => {
       socket.off('availableRooms');
@@ -87,64 +111,74 @@ const QuizApp = () => {
       socket.off('updateUsers');
       socket.off('roomCreated');
       socket.off('joinRoomResponse');
+      socket.off('gameStarted');
+      socket.off('hostChanged');
     };
   }, []);
 
-  const handleJoinRoomClick = () => {
-    setIsJoiningRoom(true); // Afficher le formulaire pour entrer le pseudo et le PIN
-  };
-
-  const handleCreateRoomClick = () => {
-    setIsCreatingRoom(true); // Afficher le formulaire de création de la room
+  const handleViewChange = (view: string) => {
+    setCurrentView(view); 
+    if (view === 'getRooms') {
+      getRooms();  
+    }
   };
 
   return (
-    <div>
-      <Header/>
+    <div className="quiz-app">
+      <Header />
 
-      {!isInRoom ? (
-        <>
-          {/* Choisir si on veut rejoindre ou créer une room */}
-          <button onClick={handleJoinRoomClick}>Rejoindre une room privé</button>
-          <button onClick={handleCreateRoomClick}>Créer une room</button>
-
-          {isJoiningRoom && (
-            <>
-              <div>
-                <input 
-                  type="text" 
-                  placeholder="Entrez votre pseudo" 
-                  value={pseudo} 
-                  onChange={(e) => setPseudo(e.target.value)} 
-                />
-                <EnterPinForm joinRoomByPin={joinRoomByPin} />
-              </div>
-            </>
-          )}
-
-          {isCreatingRoom && (
-            <>
-              <CreateRoomForm 
-                pseudo={pseudo} 
-                setPseudo={setPseudo} 
-                roomId={roomId} 
-                setRoomId={setRoomId} 
-                isPrivate={isPrivate} 
-                setIsPrivate={setIsPrivate} 
-                quizParams={quizParams} 
-                setQuizParams={setQuizParams} 
-                createRoom={createRoom}
-              />
-            </>
-          )}
-
-          <button onClick={getRooms}>Voir les rooms</button>
-          <RoomList availableRooms={availableRooms} joinRoom={joinRoom} />
-
-          <p>{message}</p>
-        </>
+      {/* Contrôle de la vue */}
+      {currentView === 'game' ? (
+        <Game roomId={roomId} usersInRoom={usersInRoom} /> 
       ) : (
-        <UserList roomId={roomId} usersInRoom={usersInRoom} roomPinDisplay={roomPinDisplay} />
+        <>
+          {!isInRoom ? (
+            <>
+              <div className="buttons">
+                <button onClick={() => handleViewChange('joinRoomByPin')}>Rejoindre une room privé</button>
+                <button  onClick={() => handleViewChange('createRoom')}>Créer une room</button>
+                <button  onClick={() => handleViewChange('getRooms')}>Voir les rooms</button>
+              </div>
+
+              {currentView === 'joinRoomByPin' && (
+                <div className="join-room-form">
+                  <EnterPinForm 
+                    pseudo={pseudo} 
+                    setPseudo={setPseudo} 
+                    joinRoomByPin={joinRoomByPin} 
+                  />
+                </div>
+              )}
+
+              {currentView === 'createRoom' && (
+                <CreateRoomForm 
+                  pseudo={pseudo} 
+                  setPseudo={setPseudo} 
+                  roomId={roomId} 
+                  setRoomId={setRoomId} 
+                  isPrivate={isPrivate} 
+                  setIsPrivate={setIsPrivate} 
+                  quizParams={quizParams} 
+                  setQuizParams={setQuizParams} 
+                  createRoom={createRoom}
+                />
+              )}
+
+              {currentView === 'getRooms' && (
+                <RoomList availableRooms={availableRooms} joinRoom={joinRoom} />
+              )}
+              <p>{message}</p>
+            </>
+          ) : (
+            <UserList 
+              roomId={roomId} 
+              usersInRoom={usersInRoom} 
+              roomPinDisplay={roomPinDisplay} 
+              startGame={startGame} 
+              currentUserPseudo={pseudo}
+            />
+          )}
+        </>
       )}
     </div>
   );

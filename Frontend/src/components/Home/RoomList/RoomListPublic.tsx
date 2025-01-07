@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Room } from '../../../types/room.type';
-import EnterPseudoForm from './EnterPseudoForm';  // Importer le formulaire de pseudo
+import EnterPseudoForm from './EnterPseudoForm';
 
 interface RoomListProps {
   availableRooms: Room[];
@@ -27,19 +27,20 @@ const RoomList: React.FC<RoomListProps> = ({ availableRooms, joinRoom }) => {
   return (
     <ul>
       {availableRooms.map((room, index) => (
+        room.roomPin === null ? (
         <li key={index}>
           Room ID: {room.roomId} - {room.usersCount} joueurs
           <button onClick={() => handleJoinClick(room)}>Rejoindre</button>
           
-          {/* Afficher le formulaire pour entrer un pseudo si l'utilisateur a cliqué sur "Rejoindre" */}
           {isJoining && roomToJoin?.roomId === room.roomId && (
             <EnterPseudoForm 
               pseudo={pseudo} 
-              setPseudo={setPseudo} 
+              setPseudo={setPseudo}
               onSubmit={handlePseudoSubmit} 
             />
           )}
-        </li>
+          </li>
+        ):<p>Aucune Room de créer</p>
       ))}
     </ul>
   );
