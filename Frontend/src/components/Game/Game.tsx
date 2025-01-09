@@ -9,7 +9,7 @@ import Results from "./Results/Results";
 
 export default function Game({  }) {
 
-    const { nextQuestion } = useGame()
+    const { nextQuestion, onAnswerPressed } = useGame()
     const [questions] = useAtom(questionAtom)
     const [questionIndex] = useAtom(questionIndexAtom)
     const [quizStatus] = useAtom(quizStatusAtom)
@@ -21,7 +21,9 @@ export default function Game({  }) {
                 <Question>
                     { questions?.quizzes[questionIndex].question ?? 'Erreur lors du chargement de la questions !' }
                 </Question>
-                <AnswerList />
+                <AnswerList 
+                onAnswerPressed={onAnswerPressed}
+                />
                 <button onClick={nextQuestion}>Next</button>
             </div>
             ) : quizStatus === 'stat' ? (

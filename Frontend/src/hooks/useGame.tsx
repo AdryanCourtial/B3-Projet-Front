@@ -1,13 +1,16 @@
 import { useAtom } from "jotai"
 import { useEffect } from "react"
-import { questionAtom, questionIndexAtom, quizStatusAtom } from "../atoms/gameAtom"
+import { answerChoosedAtom, questionAtom, questionIndexAtom, quizStatusAtom, randomizeArrayAswerAtom } from "../atoms/gameAtom"
 import { getQuizQuestionsRequest } from "../api/gameApi"
 
 export const useGame = () => {
 
     const [questions, setQuestion] = useAtom(questionAtom)
     const [questionIndex, setQuestionIndex] = useAtom(questionIndexAtom)
-    const [ quizStatus, setQuizStatus ] = useAtom(quizStatusAtom)
+    const [quizStatus, setQuizStatus] = useAtom(quizStatusAtom)
+    const [, setAnswerChoosed] = useAtom(answerChoosedAtom)
+    const [, randomizeAnswer] = useAtom(randomizeArrayAswerAtom)
+    
 
     useEffect(() => {
         if (!questions) {
@@ -16,11 +19,11 @@ export const useGame = () => {
     }, [])
 
     const nextQuestion = () => {
-        console.log(questionIndex, questions?.quizzes.length)
         if (questions) {
             if (questionIndex <= questions?.quizzes.length -1) {
                 if (quizStatus === "question" && questionIndex !== questions?.quizzes.length -1) {
                     setQuestionIndex(questionIndex + 1)
+                    randomizeAnswer()
                     setQuizStatus("stat")
                 } else {
                     setQuizStatus('finish')
@@ -41,11 +44,15 @@ export const useGame = () => {
         }).catch(() => {
             console.log('Erreur lors de la récupérations des données')
         })
+    }
 
+    const onAnswerPressed = (answer: string) => {
+        setAnswerChoosed(answer)
     }
     
     return {
         questions,
-        nextQuestion
+        nextQuestion,
+        onAnswerPressed
     }
 }
