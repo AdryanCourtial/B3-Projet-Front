@@ -94,21 +94,22 @@ const useLobby = () => {
 
   // Fonction pour rejoindre une room
   const handleJoinRoom = (roomId: string, pseudo: string) => {
-    joinRoom(roomId, pseudo);  // Appel à l'API pour rejoindre une room
-    setIsInRoom(true);         // Mise à jour de l'état pour marquer que l'utilisateur est dans la room
+    joinRoom(roomId, pseudo);  
+    setIsInRoom(true);         
   };
 
-  // Fonction pour rejoindre une room par PIN
   const handleJoinRoomByPin = (enteredPin: string) => {
-    joinRoomByPin(enteredPin, pseudo);  // Appel à l'API pour rejoindre la room avec un PIN
-    setIsInRoom(true);                   // Mise à jour de l'état pour marquer que l'utilisateur est dans la room
+    joinRoomByPin(enteredPin, pseudo);  
+    setIsInRoom(true);                  
   };
 
   // Fonction pour créer une room
-  const handleCreateRoom = () => {
-    createRoom(roomId, pseudo, quizParams, isPrivate);  // Appel à l'API pour créer une room
-    setIsInRoom(true);                                  // Mise à jour de l'état
-  };
+    const handleCreateRoom = () => {
+    createRoom(roomId, pseudo, quizParams, isPrivate);  
+    setIsInRoom(true); 
+    setCurrentView('userList');  
+    };
+
 
   // Fonction pour démarrer le jeu
   const handleStartGame = () => {

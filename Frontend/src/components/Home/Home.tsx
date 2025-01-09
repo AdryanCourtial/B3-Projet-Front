@@ -9,11 +9,13 @@ import Header from '../Global/Header/Header';
 import CreateRoomForm from './CreateQuiz/CreateRoomForm';
 import Game from '../Game/Game';
 import './Home.css';  // Importer le fichier CSS
+import { useAtom } from 'jotai';
+import { currentviewEtat, pin, userPseudo } from '../../atoms/UserAtoms';
 
 const socket = io('http://localhost:4000');
 
 const QuizApp = () => {
-  const [pseudo, setPseudo] = useState<string>('');  // Le pseudo de l'utilisateur
+  const [pseudo, setPseudo] = useAtom(userPseudo);  // Le pseudo de l'utilisateur
   const [roomId, setRoomId] = useState<string>(''); 
   const [quizParams, setQuizParams] = useState<QuizParams>({
     limit: 5,
@@ -26,18 +28,20 @@ const QuizApp = () => {
   const [usersInRoom, setUsersInRoom] = useState<{ pseudo: string, role: string }[]>([]); // Utilisateurs et rôles
   const [isInRoom, setIsInRoom] = useState<boolean>(false); // Pour savoir si l'utilisateur est dans une room
   const [isPrivate, setIsPrivate] = useState<boolean>(false); // Si la room est privée
-  const [roomPinDisplay, setRoomPinDisplay] = useState<string | null>(''); // Pin à afficher après création
-  const [currentView, setCurrentView] = useState<string>(''); 
+  const [, setRoomPinDisplay] = useAtom(pin)
+  const [currentView, setCurrentView] = useAtom(currentviewEtat)
+
+
 
 
   const createRoom = () => {
     socket.emit('createRoom', roomId, pseudo, quizParams, isPrivate);
-    setIsInRoom(true); // Passer à l'interface de la room
+    setIsInRoom(true); 
   };
 
   const joinRoom = (roomId: string, pseudo: string) => {
     socket.emit('joinRoom', roomId, pseudo);
-    setIsInRoom(true); // Passer à l'interface de la room
+    setIsInRoom(true); 
   };
 
   const joinRoomByPin = (enteredPin: string) => {
@@ -55,28 +59,43 @@ const QuizApp = () => {
     setCurrentView('game'); 
   };
 
+  const endRoom = (roomId: string) => {
+    socket.emit('endRoom', roomId)
+  }
+
   useEffect(() => {
     socket.on('availableRooms', (rooms: Room[]) => {
       setAvailableRooms(rooms);
     });
 
-    socket.on('roomJoined', (data: { roomId: string, users: { pseudo: string, role: string }[] }) => {
+
+
+    socket.on('roomJoined', (data: { roomId: string, users: { pseudo: string, role: string }[], roomPin: string | null }) => {
       setRoomId(data.roomId);
       setUsersInRoom(data.users);
+      setRoomPinDisplay(data.roomPin)
     });
 
     socket.on('message', (data: string) => {
       setMessage(data);
     });
 
-    socket.on('roomCreated', ({ roomId, roomPin }) => {
+    socket.on('roomCreated', ({ roomId, roomPin, users}) => {
       console.log(`Room créée: ${roomId}`);
       setRoomPinDisplay(roomPin); 
+      setUsersInRoom(users)
     });
 
     socket.on('updateUsers', (users: { pseudo: string, socketId: string, role: string }[]) => {
       setUsersInRoom(users); 
     });
+
+    socket.on('roomEnded', (message) => {
+      alert(message)
+      setIsInRoom(false)
+      setUsersInRoom([]);  
+      setRoomId('');
+    })
 
     socket.on('joinRoomResponse', (success: boolean, message: string) => {
       if (success) {
@@ -114,7 +133,7 @@ const QuizApp = () => {
       socket.off('gameStarted');
       socket.off('hostChanged');
     };
-  }, []);
+  }, [setCurrentView, setRoomPinDisplay]);
 
   const handleViewChange = (view: string) => {
     setCurrentView(view); 
@@ -173,9 +192,10 @@ const QuizApp = () => {
             <UserList 
               roomId={roomId} 
               usersInRoom={usersInRoom} 
-              roomPinDisplay={roomPinDisplay} 
+              // roomPinDisplay={roomPinDisplay} 
               startGame={startGame} 
               currentUserPseudo={pseudo}
+              endRoom={endRoom}
             />
           )}
         </>

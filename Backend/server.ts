@@ -19,14 +19,12 @@ const io = new Server(server, {
 
 let rooms: { [roomId: string]: Room } = {}; 
 
-// Lorsqu'un utilisateur se connecte
 io.on('connection', (socket) => {
-  console.log('Un utilisateur est connecté', socket.id);
 
   socket.on('createRoom', (roomId: string, pseudo: string, quizParams: QuizParams, isPrivate: boolean) => {
     let roomPin: string | null = null;
     if (isPrivate) {
-      roomPin = Math.floor(Math.random() * 10000).toString().padStart(4, '0'); // Exemple de génération de pin
+      roomPin = Math.floor(Math.random() * 10000).toString().padStart(4, '0'); 
     }
 
     rooms[roomId] = {
@@ -49,8 +47,9 @@ io.on('connection', (socket) => {
     console.log(rooms)
     console.log(`${pseudo} a créé la room ${roomId} avec les paramètres`, quizParams);
 
-      io.to(roomId).emit('message', `${pseudo} a créé la room avec les paramètres: ${JSON.stringify(quizParams)}`);
-    socket.emit('roomCreated', { roomId, roomPin });
+    io.to(roomId).emit('message', `${pseudo} a créé la room avec les paramètres: ${JSON.stringify(quizParams)}`);
+    
+    socket.emit('roomCreated', { roomId, roomPin, users: rooms[roomId].users });
 
   });
 
@@ -75,6 +74,8 @@ io.on('connection', (socket) => {
       console.log('Utilisateurs dans la room après ajout:', room.users);
 
       io.to(roomId).emit('updateUsers', room.users);
+      socket.emit('roomJoined', { roomId: room.name, users: room.users,  });
+
     } else {
       socket.emit('error', 'La room n\'existe pas.');
     }
@@ -82,15 +83,20 @@ io.on('connection', (socket) => {
 
 
   socket.on('getRooms', () => {
-
+  
+    
     const availableRooms = Object.keys(rooms).map(roomId => ({
+      
       roomId,
       roomPin: rooms[roomId].room_pin,
       usersCount: rooms[roomId].users.length,
-        quizParams: rooms[roomId].options,
+      quizParams: rooms[roomId].options,
+      gameState: rooms[roomId].gameState,
       
         
-    }));
+    }))
+  .filter(room => room.gameState === GameState.waiting);
+      
       
     console.log(`Je suis le nombre de user dans la room`, availableRooms)
 
@@ -127,13 +133,15 @@ io.on('connection', (socket) => {
       io.to(roomFound.room_id).emit('message', `${pseudo} a rejoint la room`);
 
       io.to(roomFound.room_id).emit('updateUsers', roomFound.users);
-        socket.emit('roomJoined', { roomId: roomFound.name, users: roomFound.users,  });
+        socket.emit('roomJoined', { roomId: roomFound.name, users: roomFound.users, roomPin: roomFound.room_pin });
 
 
     } else {
       socket.emit('error', 'Pin incorrect ou manquant pour la room privée.');
     }
-  });
+    });
+  
+  
   socket.on('startGame', (roomId) => {
     const room = rooms[roomId];
 
@@ -146,6 +154,39 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('endGame', (roomId) => {
+    const room = rooms[roomId];
+
+    if (room) {
+      room.gameState = GameState.end
+      io.to(roomId).emit('gameEnded', 'Le jeu est terminé ! Voulez-vous redémarrer ?')
+      console.log(`Le jeu a terminé dans la room ${roomId}`);
+    }
+  });
+
+  socket.on('restartGame', (roomId) => {
+    const room = rooms[roomId]
+
+    if (room && room.gameState === GameState.end) {
+      room.gameState = GameState.inGame
+      room.users.forEach(user => {
+        user.points = 0
+      })
+
+      io.to(roomId).emit('gameRestarted', 'le jeu vas recommencer')
+      console.log(`Le jeu de la room ${roomId} vas redémarrer`)
+    }
+  })
+
+  socket.on('endRoom', (roomId) => {
+    const room = rooms[roomId];
+
+    if (room) {
+      delete rooms[roomId]; 
+      io.to(roomId).emit('roomEnded', 'La room a été fermée.');
+      console.log(`La room ${roomId} a été fermée.`);
+    }
+  });
     
 socket.on('disconnect', () => {
   console.log('Un utilisateur s\'est déconnecté', socket.id);

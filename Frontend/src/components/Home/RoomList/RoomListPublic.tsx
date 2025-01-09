@@ -13,8 +13,8 @@ const RoomList: React.FC<RoomListProps> = ({ availableRooms, joinRoom }) => {
   const [roomToJoin, setRoomToJoin] = useState<Room | null>(null);  // La room que l'utilisateur veut rejoindre
 
   const handleJoinClick = (room: Room) => {
-    setRoomToJoin(room);  // Sauvegarder la room que l'utilisateur veut rejoindre
-    setIsJoining(true);  // Afficher le formulaire pour entrer le pseudo
+    setRoomToJoin(room); 
+    setIsJoining(true);  
   };
 
   const handlePseudoSubmit = () => {
@@ -25,13 +25,13 @@ const RoomList: React.FC<RoomListProps> = ({ availableRooms, joinRoom }) => {
   };
 
   return (
-    <ul>
-      {availableRooms.map((room, index) => (
-        room.roomPin === null ? (
-        <li key={index}>
+  <ul>
+    {availableRooms.map((room) => (
+      room.roomPin === null ? (
+        <li key={room.roomId}>  
           Room ID: {room.roomId} - {room.usersCount} joueurs
           <button onClick={() => handleJoinClick(room)}>Rejoindre</button>
-          
+
           {isJoining && roomToJoin?.roomId === room.roomId && (
             <EnterPseudoForm 
               pseudo={pseudo} 
@@ -39,10 +39,11 @@ const RoomList: React.FC<RoomListProps> = ({ availableRooms, joinRoom }) => {
               onSubmit={handlePseudoSubmit} 
             />
           )}
-          </li>
-        ):<p>Aucune Room de créer</p>
-      ))}
-    </ul>
+        </li>
+      ) : <p key={room.roomId}>Aucune Room de créée</p>  // Utilisation de room.roomId pour l'élément "aucune room"
+    ))}
+  </ul>
+
   );
 };
 
