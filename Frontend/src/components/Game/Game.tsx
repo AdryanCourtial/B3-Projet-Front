@@ -1,25 +1,40 @@
 import AnswerList from "./AnswerList/AnswerList";
 import Question from "./Question/Question";
 import { useGame } from "../../hooks/useGame";
+import { useAtom } from "jotai";
+import { questionAtom, questionIndexAtom, quizStatusAtom } from "../../atoms/gameAtom";
+import Statistiques from "./Stats/Stats";
+import Results from "./Results/Results";
 
 
-export default function Game() {
+export default function Game({  }) {
 
-    const { questions } = useGame()
+    const { nextQuestion } = useGame()
+    const [questions] = useAtom(questionAtom)
+    const [questionIndex] = useAtom(questionIndexAtom)
+    const [quizStatus] = useAtom(quizStatusAtom)
 
     return (
-        <>
-            <Question />
-            <AnswerList />
-            {questions &&
-            <h2>
-                You have {questions.quizzes[0].answer} unread messages.
-            </h2>
+        <div className="max-h-screen h-screen">
+            { quizStatus === 'question' ? (
+            <div className="flex flex-col h-full">
+                <Question>
+                    { questions?.quizzes[questionIndex].question ?? 'Erreur lors du chargement de la questions !' }
+                </Question>
+                <AnswerList />
+                <button onClick={nextQuestion}>Next</button>
+            </div>
+            ) : quizStatus === 'stat' ? (
+            <div>
+                <Statistiques />
+                <button onClick={nextQuestion}> Next </button>
+            </div>
+            ) :
+            <div>
+                <Results />
+            </div>
             }
-            <h1>
-                SALUT
-            </h1>
-        </>
+        </div>
     )
   }
   

@@ -13,3 +13,5 @@ export type Question = {
     category: Categories,
     difficulty: Difficulties
 }
+
+export type QuizStatus = "finish" | "stat" | "question"
