@@ -1,12 +1,12 @@
 import React from 'react';
 import { QuizParams } from '../../../types/quiz.type';
+import { useAtom } from 'jotai';
+import { quizParamsData } from '../../../atoms/UserAtoms';
 
-interface QuizParamsFormProps {
-  quizParams: QuizParams;
-  setQuizParams: React.Dispatch<React.SetStateAction<QuizParams>>;
-}
 
-const QuizParamsForm: React.FC<QuizParamsFormProps> = ({ quizParams, setQuizParams }) => {
+const QuizParamsForm: React.FC = () => {
+
+  const [quizParams, setQuizParams] = useAtom(quizParamsData)
   const handleQuizParamChange = (e: React.ChangeEvent<HTMLInputElement>, param: keyof QuizParams) => {
     setQuizParams({
       ...quizParams,

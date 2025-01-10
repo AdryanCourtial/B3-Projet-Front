@@ -1,29 +1,22 @@
 // useLobby.ts
 
-import { useState, useEffect } from "react";
+import {  useEffect } from "react";
 import { socket } from "../config/socket.config";
-import { createRoom, getRooms, joinRoom, joinRoomByPin, startGame } from "../api/homeApi";
-import { QuizParams } from "../types/quiz.type";
+import { createRoom, endRoom, getRooms, joinRoom, joinRoomByPin, startGame } from "../api/homeApi";
 import { Room } from "../types/room.type";
 import { useAtom } from "jotai";
-import { currentviewEtat, etatRoom, pin, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
+import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, messageServer, pin, quizParamsData, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
 
 const useLobby = () => {
   const [pseudo, setPseudo] = useAtom(userPseudo)
   const [roomId, setRoomId] = useAtom(roomIdAtom)
-  const [quizParams, setQuizParams] = useState<QuizParams>({
-    limit: 5,
-    category: "tv_cinema",
-    difficulty: "facile",
-    gamemode: "classic",
-  });
-  const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
-  const [message, setMessage] = useState<string>("");
-  const [usersInRoom, setUsersInRoom] = useAtom(usersInRoomAtom)
-  const [isInRoom, setIsInRoom] = useAtom(etatRoom)
-  const [isPrivate, setIsPrivate] = useState<boolean>(false);
-  // const [roomPinDisplay, setRoomPinDisplay] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useAtom(currentviewEtat)
+  const [quizParams] = useAtom(quizParamsData)
+  const [, setAvailableRooms] = useAtom(availableRoomsAtom)
+  const [, setMessage] = useAtom(messageServer)
+  const [, setUsersInRoom] = useAtom(usersInRoomAtom)
+  const [, setIsInRoom] = useAtom(etatRoom)
+  const [isPrivate] = useAtom(isPrivateAtom)
+  const [, setCurrentView] = useAtom(currentviewEtat)
   const [, setRoomPinDisplay] = useAtom(pin)
 
 
@@ -32,24 +25,25 @@ const useLobby = () => {
       setAvailableRooms(rooms);
     });
 
-    socket.on("roomJoined", (data: { roomId: string; users: { pseudo: string; role: string  }[], roomPin: string | null }) => {
+    socket.on("roomJoined", (data: { success:boolean, roomId: string; users: { pseudo: string, role: string, points:number  }[], roomPin: string | null }) => {
       setRoomId(data.roomId);
       setUsersInRoom(data.users);
       setRoomPinDisplay(data.roomPin)
+      setIsInRoom(true);                  
 
     });
 
     socket.on("message", (data: string) => {
       setMessage(data);
     });
-
-      socket.on("roomCreated", ({ roomId, roomPin }) => {
-    console.log(`Room créée: ${roomId}`);
-
-      setRoomPinDisplay(roomPin);
+    
+      socket.on('roomCreated', ({ roomId, roomPin, users}) => {
+      console.log(`Room créée: ${roomId}`);
+      setRoomPinDisplay(roomPin); 
+      setUsersInRoom(users)
     });
 
-    socket.on("updateUsers", (users: { pseudo: string; socketId: string; role: string }[]) => {
+    socket.on("updateUsers", (users: { pseudo: string, socketId: string, role: string, points:number }[]) => {
       setUsersInRoom(users);
     });
 
@@ -61,9 +55,22 @@ const useLobby = () => {
       }
     });
 
+    socket.on("error", (errorMessage: { success: boolean, message: string }) => {
+      if (!errorMessage.success) {
+        setMessage(errorMessage.message);  
+      }
+    });
+
     socket.on("gameStarted", () => {
       setCurrentView("game");
     });
+
+    socket.on('roomEnded', (message) => {
+      alert(message)
+      setIsInRoom(false)
+      setUsersInRoom([]);  
+      setRoomId('');
+    })
 
     socket.on("hostChanged", (newHostPseudo) => {
       setUsersInRoom((prevUsers) =>
@@ -79,6 +86,8 @@ const useLobby = () => {
     });
 
     return () => {
+      socket.off('roomEnded');
+      socket.off('error');
       socket.off("availableRooms");
       socket.off("message");
       socket.off("roomJoined");
@@ -88,11 +97,13 @@ const useLobby = () => {
       socket.off("gameStarted");
       socket.off("hostChanged");
     };
-  }, [setCurrentView]);
+  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms]);
 
   // Fonction pour changer de vue
   const handleViewChange = (view: string) => {
     setCurrentView(view);
+    setMessage('')
+
     if (view === "getRooms") {
       getRooms();
     }
@@ -101,20 +112,18 @@ const useLobby = () => {
   // Fonction pour rejoindre une room
   const handleJoinRoom = (roomId: string, pseudo: string) => {
     joinRoom(roomId, pseudo);  
-    setIsInRoom(true);
     setPseudo(pseudo)         
   };
 
   const handleJoinRoomByPin = (enteredPin: string) => {
     joinRoomByPin(enteredPin, pseudo);  
-    setIsInRoom(true);                  
   };
 
   // Fonction pour créer une room
     const handleCreateRoom = () => {
     createRoom(roomId, pseudo, quizParams, isPrivate);  
     setIsInRoom(true); 
-
+    setPseudo(pseudo)         
     setCurrentView('UserList');  
     };
 
@@ -126,35 +135,18 @@ const useLobby = () => {
 
   };
 
-  const endRoom = (roomId: string) => {
-    socket.emit('endRoom', roomId)
-  }
+  const handleEndGame = () => {
+    endRoom(roomId)
+    console.log('le jeu est finis ')
+  } 
 
   return {
-    endRoom,
-    availableRooms,
-    currentView,
+    handleEndGame,
     handleViewChange,
-    isInRoom,
-    pseudo,
-    setPseudo,
-    quizParams,
-    setQuizParams,
-    roomId,
-    usersInRoom,
-    setIsPrivate,
-    isPrivate,
-    message,
     handleJoinRoom,
     handleJoinRoomByPin,
     handleCreateRoom,
-    handleStartGame,
-      setRoomId,
-      createRoom,
-      joinRoomByPin,
-      joinRoom,
-      startGame
-    
+    handleStartGame    
   };
 };
 

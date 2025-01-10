@@ -46,8 +46,6 @@ io.on('connection', (socket) => {
     socket.join(roomId); 
     console.log(rooms)
     console.log(`${pseudo} a créé la room ${roomId} avec les paramètres`, quizParams);
-
-    io.to(roomId).emit('message', `${pseudo} a créé la room avec les paramètres: ${JSON.stringify(quizParams)}`);
     
     socket.emit('roomCreated', { roomId, roomPin, users: rooms[roomId].users });
 
@@ -57,6 +55,14 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
 
     if (room) {
+
+      const userExists = room.users.some(user => user.pseudo === pseudo);
+
+      if (userExists) {
+        socket.emit('error', { success: false, message: 'Ce pseudo est déjà utilisé dans cette room.' });
+        return;
+      }
+
       const userRole = room.users.length === 0 ? UserRole.host : UserRole.player;
 
       console.log(`Utilisateur "${pseudo}" rejoint la room ${roomId} avec le rôle: ${userRole}`);
@@ -77,7 +83,7 @@ io.on('connection', (socket) => {
       socket.emit('roomJoined', { roomId: room.name, users: room.users,  });
 
     } else {
-      socket.emit('error', 'La room n\'existe pas.');
+      socket.emit('error', { success: false, message:'La room n\'existe pas.',});
     }
   });
 
@@ -102,6 +108,10 @@ io.on('connection', (socket) => {
 
 
     socket.emit('availableRooms', availableRooms);
+
+    if (availableRooms.length === 0) {
+      socket.emit('error', { success:false, message:'Aucune room disponible'})
+    }
   });
 
     socket.on('joinRoomByPin', (enteredPin: string, pseudo: string) => {
@@ -110,13 +120,21 @@ io.on('connection', (socket) => {
     for (let roomId in rooms) {
       const room = rooms[roomId];
 
-      if (room.room_pin === enteredPin) {
+      if (room.room_pin === enteredPin && room.gameState === GameState.waiting) {
         roomFound = room;
         break; 
       }
     }
 
-    if (roomFound) {
+      if (roomFound) {
+      
+      const userExists = roomFound.users.some(user => user.pseudo === pseudo);
+
+      if (userExists) {
+        socket.emit('error', { success: false, message: 'Ce pseudo est déjà utilisé dans cette room.' });
+        return; 
+      }
+
       roomFound.users.push({
         pseudo: pseudo,
         role: UserRole.player,       // Rôle initial
@@ -137,7 +155,7 @@ io.on('connection', (socket) => {
 
 
     } else {
-      socket.emit('error', 'Pin incorrect ou manquant pour la room privée.');
+      socket.emit('error', {success:false, message: 'Pin incorrect ou jeu déja en cours pour la room privée.' });
     }
     });
   
@@ -151,6 +169,7 @@ io.on('connection', (socket) => {
       io.to(roomId).emit('gameStarted', 'Le jeu commence maintenant !');
       console.log(room)
       console.log(`Le jeu a commencé dans la room ${roomId}`);
+
     }
   });
 

@@ -1,29 +1,24 @@
 import RoomList from './RoomList/RoomListPublic';
 import UserList from './UserList/UserList';
 import EnterPinForm from './RoomList/EnterPinForm';
-import Header from '../Global/Header/Header';
 import CreateRoomForm from './CreateQuiz/CreateRoomForm';
 import Game from '../Game/Game';
 import './Home.css'; // Importer le fichier CSS
 import useLobby from '../../hooks/useLobby';
 import { useAtom } from 'jotai';
-import { currentviewEtat, roomIdAtom } from '../../atoms/UserAtoms';
-
-// const socket = io('http://localhost:4000');
+import { currentviewEtat, etatRoom } from '../../atoms/UserAtoms';
 
 const QuizApp = () => {
-  const { handleCreateRoom,endRoom, handleJoinRoomByPin, handleJoinRoom, handleStartGame,availableRooms, handleViewChange, isInRoom, isPrivate, message, pseudo, quizParams, setIsPrivate, setPseudo, setQuizParams, usersInRoom, setRoomId } = useLobby();
-
+  const { handleEndGame, handleCreateRoom, handleJoinRoomByPin, handleJoinRoom, handleStartGame, handleViewChange } = useLobby();
   const [currentView] = useAtom(currentviewEtat)
-  const [roomId] = useAtom(roomIdAtom)
-console.log(currentView)
+  const [isInRoom] = useAtom(etatRoom)
+  
   return (
     <div className="quiz-app">
-      <Header />
 
       {/* Contrôle de la vue */}
       {currentView === 'game' ? (
-        <Game roomId={roomId} usersInRoom={usersInRoom} />
+        <Game/>
       ) : (
         <>
           {!isInRoom ? (
@@ -37,8 +32,6 @@ console.log(currentView)
               {currentView === 'joinRoomByPin' && (
                 <div className="join-room-form">
                   <EnterPinForm 
-                    pseudo={pseudo} 
-                    setPseudo={setPseudo} 
                     joinRoomByPin={handleJoinRoomByPin} 
                   />
                 </div>
@@ -46,27 +39,19 @@ console.log(currentView)
 
               {currentView === 'createRoom' && (
                 <CreateRoomForm 
-                  pseudo={pseudo} 
-                  setPseudo={setPseudo} 
-                  roomId={roomId} 
-                  setRoomId={setRoomId} 
-                  isPrivate={isPrivate} 
-                  setIsPrivate={setIsPrivate} 
-                  quizParams={quizParams} 
-                  setQuizParams={setQuizParams} 
-                  createRoom={handleCreateRoom} // Passer la nouvelle fonction ici
+     
+                  createRoom={handleCreateRoom} 
                 />
               )}
 
               {currentView === 'getRooms' && (
-                <RoomList availableRooms={availableRooms} joinRoom={handleJoinRoom} />
+                <RoomList  joinRoom={handleJoinRoom} />
               )}
-              <p>{message}</p>
             </>
           ) : (
             <UserList 
               startGame={handleStartGame} 
-              endRoom={endRoom}
+              endRoom={handleEndGame}
             />
           )}
         </>

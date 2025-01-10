@@ -1,41 +1,62 @@
+import { useAtom } from 'jotai';
 import React from 'react';
+import { isPrivateAtom, roomIdAtom, userPseudo } from '../../../atoms/UserAtoms';
 
 interface RoomFormProps {
-  pseudo: string;
-  setPseudo: React.Dispatch<React.SetStateAction<string>>;
-  roomId: string;
-  setRoomId: React.Dispatch<React.SetStateAction<string>>;
-  isPrivate: boolean;
-  setIsPrivate: React.Dispatch<React.SetStateAction<boolean>>;
+
   createRoom: () => void;
 }
 
-const RoomForm: React.FC<RoomFormProps> = ({ pseudo, setPseudo, roomId, setRoomId, isPrivate, setIsPrivate, createRoom }) => {
-  return (
-    <div>
-      <input
-        type="text"
-        placeholder="Pseudo"
-        value={pseudo}
-        onChange={(e) => setPseudo(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Room ID"
-        value={roomId}
-        onChange={(e) => setRoomId(e.target.value)}
-      />
-      <label>
-        Room privée
-        <input
-          type="checkbox"
-          checked={isPrivate}
-          onChange={() => setIsPrivate(!isPrivate)}
-        />
-      </label>
+const RoomForm: React.FC<RoomFormProps> = ({ createRoom }) => {
 
-      <button onClick={createRoom}>Créer une room</button>
-    </div>
+  const [pseudo, setPseudo] = useAtom(userPseudo)
+
+  const [roomId, setRoomId] = useAtom(roomIdAtom)
+
+  const [isPrivate, setIsPrivate] = useAtom(isPrivateAtom)
+
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); 
+    if (pseudo.trim() && roomId.trim()) {
+      createRoom();  
+    } else {
+      alert("Veuillez remplir tous les champs.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <input
+          type="text"
+          placeholder="Pseudo"
+          value={pseudo}
+          required
+          onChange={(e) => setPseudo(e.target.value)}
+        />
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Nom de la room"
+          value={roomId}
+          required
+          onChange={(e) => setRoomId(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>
+          Room privée
+          <input
+            type="checkbox"
+            checked={isPrivate}
+            onChange={() => setIsPrivate(!isPrivate)}
+          />
+        </label>
+      </div>
+      <button type="submit">Créer une room</button>
+    </form>
   );
 };
 

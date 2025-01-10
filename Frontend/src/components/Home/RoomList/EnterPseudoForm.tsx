@@ -1,13 +1,16 @@
 // EnterPseudoForm.tsx
+import { useAtom } from 'jotai';
 import React from 'react';
+import { userPseudo } from '../../../atoms/UserAtoms';
 
 interface EnterPseudoFormProps {
-  pseudo: string;
-  setPseudo: React.Dispatch<React.SetStateAction<string>>;
   onSubmit: () => void;
 }
 
-const EnterPseudoForm: React.FC<EnterPseudoFormProps> = ({ pseudo, setPseudo, onSubmit }) => {
+const EnterPseudoForm: React.FC<EnterPseudoFormProps> = ({ onSubmit }) => {
+
+  const [pseudo, setPseudo] = useAtom(userPseudo)
+
   return (
     <div>
       <h3>Entrez votre pseudo</h3>

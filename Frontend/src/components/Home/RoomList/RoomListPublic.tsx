@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { Room } from '../../../types/room.type';
 import EnterPseudoForm from './EnterPseudoForm';
+import { useAtom } from 'jotai';
+import { availableRoomsAtom, messageServer, userPseudo } from '../../../atoms/UserAtoms';
 
 interface RoomListProps {
-  availableRooms: Room[];
   joinRoom: (roomId: string, pseudo: string) => void;
 }
 
-const RoomList: React.FC<RoomListProps> = ({ availableRooms, joinRoom }) => {
-  const [pseudo, setPseudo] = useState<string>(''); 
-  const [isJoining, setIsJoining] = useState<boolean>(false);  // Si l'utilisateur a cliqué sur "Rejoindre"
-  const [roomToJoin, setRoomToJoin] = useState<Room | null>(null);  // La room que l'utilisateur veut rejoindre
+const RoomList: React.FC<RoomListProps> = ({ joinRoom }) => {
+  const [availableRooms] = useAtom(availableRoomsAtom)
+  const [pseudo] = useAtom(userPseudo)
+  const [isJoining, setIsJoining] = useState<boolean>(false);  
+  const [roomToJoin, setRoomToJoin] = useState<Room | null>(null); 
+  const [message] = useAtom(messageServer)
 
   const handleJoinClick = (room: Room) => {
     setRoomToJoin(room); 
@@ -19,31 +22,32 @@ const RoomList: React.FC<RoomListProps> = ({ availableRooms, joinRoom }) => {
 
   const handlePseudoSubmit = () => {
     if (pseudo.trim()) {
-      joinRoom(roomToJoin?.roomId || '', pseudo); // Rejoindre la room avec le pseudo
-      setIsJoining(false);  // Cacher le formulaire de pseudo
+      joinRoom(roomToJoin?.roomId || '', pseudo); 
+      setIsJoining(false);  
     }
   };
 
   return (
-  <ul>
-    {availableRooms.map((room) => (
-      room.roomPin === null ? (
-        <li key={room.roomId}>  
-          Room ID: {room.roomId} - {room.usersCount} joueurs
-          <button onClick={() => handleJoinClick(room)}>Rejoindre</button>
+    <div>
+      <ul>
+        {availableRooms.map((room) => (
+          room.roomPin === null ? (
+            <li key={room.roomId}>  
+              Room ID: {room.roomId} - {room.usersCount} joueurs
+              <button onClick={() => handleJoinClick(room)}>Rejoindre</button>
 
-          {isJoining && roomToJoin?.roomId === room.roomId && (
-            <EnterPseudoForm 
-              pseudo={pseudo} 
-              setPseudo={setPseudo}
-              onSubmit={handlePseudoSubmit} 
-            />
-          )}
-        </li>
-      ) : <p key={room.roomId}>Aucune Room de créée</p>  // Utilisation de room.roomId pour l'élément "aucune room"
-    ))}
-  </ul>
+              {isJoining && roomToJoin?.roomId === room.roomId && (
+                <EnterPseudoForm 
+                  onSubmit={handlePseudoSubmit} 
+                />
+              )}
+            </li>
+          ) : null
+        ))}
+      </ul>
 
+      {message && <p style={{ color: 'red' }}>{message}</p>}
+    </div>
   );
 };
 

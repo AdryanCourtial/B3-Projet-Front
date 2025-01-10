@@ -28,3 +28,8 @@ export const getRooms = () => {
 export const startGame = (roomId: string) => {
   socket.emit('startGame', roomId);
 };
+
+
+ export const endRoom = (roomId: string) => {
+    socket.emit('endRoom', roomId)
+  }

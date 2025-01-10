@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAtom } from 'jotai';
-import { pin, roomIdAtom, userPseudo, usersInRoomAtom } from '../../../atoms/UserAtoms';
+import {   pin, roomIdAtom, userPseudo, usersInRoomAtom } from '../../../atoms/UserAtoms';
 
 interface UserListProps {
   startGame: () => void;
@@ -14,7 +14,7 @@ const UserList: React.FC<UserListProps> = ({  startGame, endRoom }) => {
 const [roomPinDisplay] = useAtom(pin)
 const [usersInRoom] = useAtom(usersInRoomAtom)
 
-const [currentUserPseudo] = useAtom(userPseudo)
+  const [currentUserPseudo] = useAtom(userPseudo)
 
 console.log("usersInRoom:", usersInRoom);
 console.log("currentUserPseudo:", currentUserPseudo);
@@ -38,6 +38,7 @@ console.log("currentUserPseudo:", currentUserPseudo);
       </ul>
       {roomPinDisplay && <div>Pin de la room: {roomPinDisplay}</div>}
     </div>
+
   );
 };
 
