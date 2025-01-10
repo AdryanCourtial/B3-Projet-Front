@@ -16,7 +16,7 @@ export default function AnswerList({ onAnswerPressed }: Props) {
 
 
     return (
-        <div className="grid bg-slate-500 border-[1px] border-blue-600 grid-cols-1 lg:grid-cols-2 p-6 gap-4 place-items-center flex-1 cursor-pointer">
+        <div className="grid bg-slate-500 border-[1px] border-blue-600 grid-cols-1 lg:grid-cols-2 p-6 gap-4 place-items-center flex-1">
             { questions &&
                 arrayRandomize.map((index) => (
                 <AnswerItems

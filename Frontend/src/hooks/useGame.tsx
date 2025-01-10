@@ -2,6 +2,7 @@ import { useAtom } from "jotai"
 import { useEffect } from "react"
 import { answerChoosedAtom, questionAtom, questionIndexAtom, quizStatusAtom, randomizeArrayAswerAtom } from "../atoms/gameAtom"
 import { getQuizQuestionsRequest } from "../api/gameApi"
+import useToaster from "./useToaster"
 
 export const useGame = () => {
 
@@ -11,6 +12,7 @@ export const useGame = () => {
     const [, setAnswerChoosed] = useAtom(answerChoosedAtom)
     const [, randomizeAnswer] = useAtom(randomizeArrayAswerAtom)
     
+    const { useToast } = useToaster()
 
     useEffect(() => {
         if (!questions) {
@@ -48,6 +50,7 @@ export const useGame = () => {
 
     const onAnswerPressed = (answer: string) => {
         setAnswerChoosed(answer)
+        useToast('erreur',  "WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW")
     }
     
     return {

@@ -1,5 +1,5 @@
 import { ReactNode } from "react"
-import Toaster from "../../components/Global/Toaster/Toaster"
+import Toaster from "../../components/Global/Toaster/ToasterList"
 
 type Props = {
     children: ReactNode
