@@ -1,6 +1,7 @@
 import { atom } from 'jotai';
 import { Room } from '../types/room.type';
 import { QuizParams } from '../types/quiz.type';
+import { QuizCategory, QuizDifficulty, QuizGameMode } from '../types/quiz.enum';
 
 export const userPseudo = atom<string>("")
 
@@ -22,8 +23,11 @@ export const availableRoomsAtom = atom<Room[]>([]);
 
 export const quizParamsData = atom<QuizParams>({
     limit: 5,
-    category: "tv_cinema",
-    difficulty: "facile",
-    gamemode: "classic",
-  });
+    category: QuizCategory.cinema,
+    difficulty: QuizDifficulty.facile,
+    gamemode: QuizGameMode.classic,
+});
+  
+export const remainingTimeAtom = atom<number>(0)
 
+export const isTimeUpAtom = atom<boolean>(false)

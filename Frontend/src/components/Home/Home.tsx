@@ -1,58 +1,46 @@
-import RoomList from './RoomList/RoomListPublic';
-import UserList from './UserList/UserList';
-import EnterPinForm from './RoomList/EnterPinForm';
-import CreateRoomForm from './CreateQuiz/CreateRoomForm';
-import Game from '../Game/Game';
-import './Home.css'; // Importer le fichier CSS
-import useLobby from '../../hooks/useLobby';
 import { useAtom } from 'jotai';
 import { currentviewEtat, etatRoom } from '../../atoms/UserAtoms';
+import EnterPinForm from './RoomList/EnterPinForm'; // Composant Enfant
+import CreateRoomForm from './CreateQuiz/CreateRoomForm'; // Composant Enfant
+import RoomList from './RoomList/RoomListPublic'; // Composant Enfant
+import UserList from './UserList/UserList'; // Composant Enfant
+import Game from '../Game/Game'; // Composant Enfant
+import useLobby from '../../hooks/useLobby';
 
 const QuizApp = () => {
   const { handleEndGame, handleCreateRoom, handleJoinRoomByPin, handleJoinRoom, handleStartGame, handleViewChange } = useLobby();
-  const [currentView] = useAtom(currentviewEtat)
-  const [isInRoom] = useAtom(etatRoom)
-  
-  return (
-    <div className="quiz-app">
+  const [currentView] = useAtom(currentviewEtat);
+  const [isInRoom] = useAtom(etatRoom);
 
+  return (
+    <div className="quiz-app max-w-5xl mx-auto p-6">
       {/* Contrôle de la vue */}
       {currentView === 'game' ? (
-        <Game/>
+        <Game />
       ) : (
         <>
           {!isInRoom ? (
             <>
-              <div className="buttons">
-                <button onClick={() => handleViewChange('joinRoomByPin')}>Rejoindre une room privé</button>
-                <button onClick={() => handleViewChange('createRoom')}>Créer une room</button>
-                <button onClick={() => handleViewChange('getRooms')}>Voir les rooms</button>
+              <div className="button-container flex gap-4 mb-6 justify-center">
+                <button onClick={() => handleViewChange('joinRoomByPin')} className="btn-blue">Rejoindre une room privée</button>
+                <button onClick={() => handleViewChange('createRoom')} className="btn-green">Créer une room</button>
+                <button onClick={() => handleViewChange('getRooms')} className="btn-gray">Voir les rooms</button>
               </div>
 
               {currentView === 'joinRoomByPin' && (
-                <div className="join-room-form">
-                  <EnterPinForm 
-                    joinRoomByPin={handleJoinRoomByPin} 
-                  />
-                </div>
+                <EnterPinForm joinRoomByPin={handleJoinRoomByPin} />
               )}
 
               {currentView === 'createRoom' && (
-                <CreateRoomForm 
-     
-                  createRoom={handleCreateRoom} 
-                />
+                <CreateRoomForm createRoom={handleCreateRoom} />
               )}
 
               {currentView === 'getRooms' && (
-                <RoomList  joinRoom={handleJoinRoom} />
+                <RoomList joinRoom={handleJoinRoom} />
               )}
             </>
           ) : (
-            <UserList 
-              startGame={handleStartGame} 
-              endRoom={handleEndGame}
-            />
+            <UserList startGame={handleStartGame} endRoom={handleEndGame} />
           )}
         </>
       )}

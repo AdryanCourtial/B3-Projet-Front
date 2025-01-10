@@ -5,7 +5,7 @@ import { socket } from "../config/socket.config";
 import { createRoom, endRoom, getRooms, joinRoom, joinRoomByPin, startGame } from "../api/homeApi";
 import { Room } from "../types/room.type";
 import { useAtom } from "jotai";
-import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, messageServer, pin, quizParamsData, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
+import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
 
 const useLobby = () => {
   const [pseudo, setPseudo] = useAtom(userPseudo)
@@ -18,9 +18,25 @@ const useLobby = () => {
   const [isPrivate] = useAtom(isPrivateAtom)
   const [, setCurrentView] = useAtom(currentviewEtat)
   const [, setRoomPinDisplay] = useAtom(pin)
+  const [, setRemainingTime] = useAtom(remainingTimeAtom);
+  const [, setIsTimeUp] = useAtom(isTimeUpAtom)
 
 
   useEffect(() => {
+
+    socket.on('updateTimer', (data) => {
+      setRemainingTime(data.remainingTime);
+    });
+
+    socket.on('timeUp', (message) => {
+      setIsTimeUp(true);
+      setMessage(message)
+    });
+
+    socket.on('gameEnded', (message) => {
+      setMessage(message)
+    });
+
     socket.on("availableRooms", (rooms: Room[]) => {
       setAvailableRooms(rooms);
     });
@@ -63,6 +79,8 @@ const useLobby = () => {
 
     socket.on("gameStarted", () => {
       setCurrentView("game");
+      setRemainingTime(30);  
+      setIsTimeUp(false);
     });
 
     socket.on('roomEnded', (message) => {
@@ -97,7 +115,7 @@ const useLobby = () => {
       socket.off("gameStarted");
       socket.off("hostChanged");
     };
-  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms]);
+  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms, setIsTimeUp, setRemainingTime]);
 
   // Fonction pour changer de vue
   const handleViewChange = (view: string) => {

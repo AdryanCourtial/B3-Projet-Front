@@ -1,7 +1,9 @@
+import { QuizCategory, QuizDifficulty, QuizGameMode } from "./quiz.enum";
+
 export interface QuizParams {
   limit: number;
-  category: string;
-  difficulty: string;
-  gamemode: string;
+  category: QuizCategory;
+  difficulty: QuizDifficulty;
+  gamemode: QuizGameMode;
 }
 

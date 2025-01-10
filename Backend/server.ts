@@ -19,6 +19,10 @@ const io = new Server(server, {
 
 let rooms: { [roomId: string]: Room } = {}; 
 
+let gameTimer = null;  
+let currentQuestionTime = 30;  
+let intervalId: NodeJS.Timeout | null = null; // type explicite pour intervalId
+
 io.on('connection', (socket) => {
 
   socket.on('createRoom', (roomId: string, pseudo: string, quizParams: QuizParams, isPrivate: boolean) => {
@@ -164,22 +168,39 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
 
     if (room) {
-
-      room.gameState = GameState.inGame
+      room.gameState = GameState.inGame;
       io.to(roomId).emit('gameStarted', 'Le jeu commence maintenant !');
-      console.log(room)
-      console.log(`Le jeu a commencé dans la room ${roomId}`);
 
+      // Reset du timer à 30 secondes pour la première question
+      currentQuestionTime = 30;
+      
+      // Définir l'intervalle
+      intervalId = setInterval(() => {
+        currentQuestionTime -= 1;
+        io.to(roomId).emit('updateTimer', { remainingTime: currentQuestionTime });
+
+        if (currentQuestionTime <= 0) {
+          if (intervalId) {
+            clearInterval(intervalId);  // Arrêter le timer
+          }
+          io.to(roomId).emit('timeUp', 'Le temps est écoulé pour cette question!');
+          room.gameState = GameState.waiting; // Passer à l'état suivant du jeu
+        }
+      }, 1000);
     }
   });
-
   socket.on('endGame', (roomId) => {
     const room = rooms[roomId];
-
+    
     if (room) {
-      room.gameState = GameState.end
-      io.to(roomId).emit('gameEnded', 'Le jeu est terminé ! Voulez-vous redémarrer ?')
+      room.gameState = GameState.end;
+      io.to(roomId).emit('gameEnded', 'Le jeu est terminé ! Voulez-vous redémarrer ?');
       console.log(`Le jeu a terminé dans la room ${roomId}`);
+
+      // Arrêter le timer si le jeu est terminé
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     }
   });
 
