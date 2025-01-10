@@ -29,28 +29,26 @@ function App() {
             </NoLayout>
             } />
 
-          <Route path="/qibble/private"
-          element={
-            <NoLayout>
-              <Private />
-            </NoLayout>
-          } />
-          <Route path="/qibble/lobby" element={
-            <>
-            <NoLayout>
-              <Lobby />
-            </NoLayout>
-            </>
-            } />
-          <Route path="/qibble/game/:uuid"
-          element={
-            <NoLayout>
-              <Game />
-            </NoLayout>
-          } />
-          
-        </Routes>
-      </BrowserRouter>
+      <Route path="/qibble/private"
+      element={
+        <NoLayout>
+          <Private />
+        </NoLayout>
+      } />
+      <Route path="/qibble/lobby" element={
+        <DefaultLayout>
+          <Lobby />
+        </DefaultLayout>
+        } />
+      <Route path="/qibble/game/:uuid"
+      element={
+        <NoLayout>
+          <Game />
+        </NoLayout>
+      } />
+      
+    </Routes>
+  </BrowserRouter>
   )
 }
 
