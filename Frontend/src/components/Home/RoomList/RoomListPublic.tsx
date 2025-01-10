@@ -8,7 +8,7 @@ interface RoomListProps {
 }
 
 const RoomList: React.FC<RoomListProps> = ({ availableRooms, joinRoom }) => {
-  const [pseudo, setPseudo] = useState<string>('');  // L'état pour le pseudo de l'utilisateur
+  const [pseudo, setPseudo] = useState<string>(''); 
   const [isJoining, setIsJoining] = useState<boolean>(false);  // Si l'utilisateur a cliqué sur "Rejoindre"
   const [roomToJoin, setRoomToJoin] = useState<Room | null>(null);  // La room que l'utilisateur veut rejoindre
 

@@ -7,6 +7,7 @@ const Game: React.FC<GameProps> = ({ roomId }) => {
   return (
     <div>
       <h1>Game in Room: {roomId}</h1>
+
     </div>
   );
 };

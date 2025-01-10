@@ -5,10 +5,12 @@ import { socket } from "../config/socket.config";
 import { createRoom, getRooms, joinRoom, joinRoomByPin, startGame } from "../api/homeApi";
 import { QuizParams } from "../types/quiz.type";
 import { Room } from "../types/room.type";
+import { useAtom } from "jotai";
+import { currentviewEtat, etatRoom, pin, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
 
 const useLobby = () => {
-  const [pseudo, setPseudo] = useState<string>("");
-  const [roomId, setRoomId] = useState<string>("");
+  const [pseudo, setPseudo] = useAtom(userPseudo)
+  const [roomId, setRoomId] = useAtom(roomIdAtom)
   const [quizParams, setQuizParams] = useState<QuizParams>({
     limit: 5,
     category: "tv_cinema",
@@ -17,20 +19,24 @@ const useLobby = () => {
   });
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
   const [message, setMessage] = useState<string>("");
-  const [usersInRoom, setUsersInRoom] = useState<{ pseudo: string; role: string }[]>([]);
-  const [isInRoom, setIsInRoom] = useState<boolean>(false);
+  const [usersInRoom, setUsersInRoom] = useAtom(usersInRoomAtom)
+  const [isInRoom, setIsInRoom] = useAtom(etatRoom)
   const [isPrivate, setIsPrivate] = useState<boolean>(false);
-  const [roomPinDisplay, setRoomPinDisplay] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<string>("");
+  // const [roomPinDisplay, setRoomPinDisplay] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useAtom(currentviewEtat)
+  const [, setRoomPinDisplay] = useAtom(pin)
+
 
   useEffect(() => {
     socket.on("availableRooms", (rooms: Room[]) => {
       setAvailableRooms(rooms);
     });
 
-    socket.on("roomJoined", (data: { roomId: string; users: { pseudo: string; role: string }[] }) => {
+    socket.on("roomJoined", (data: { roomId: string; users: { pseudo: string; role: string  }[], roomPin: string | null }) => {
       setRoomId(data.roomId);
       setUsersInRoom(data.users);
+      setRoomPinDisplay(data.roomPin)
+
     });
 
     socket.on("message", (data: string) => {
@@ -82,7 +88,7 @@ const useLobby = () => {
       socket.off("gameStarted");
       socket.off("hostChanged");
     };
-  }, []);
+  }, [setCurrentView]);
 
   // Fonction pour changer de vue
   const handleViewChange = (view: string) => {
@@ -95,7 +101,8 @@ const useLobby = () => {
   // Fonction pour rejoindre une room
   const handleJoinRoom = (roomId: string, pseudo: string) => {
     joinRoom(roomId, pseudo);  
-    setIsInRoom(true);         
+    setIsInRoom(true);
+    setPseudo(pseudo)         
   };
 
   const handleJoinRoomByPin = (enteredPin: string) => {
@@ -107,16 +114,24 @@ const useLobby = () => {
     const handleCreateRoom = () => {
     createRoom(roomId, pseudo, quizParams, isPrivate);  
     setIsInRoom(true); 
-    setCurrentView('userList');  
+
+    setCurrentView('UserList');  
     };
 
 
   // Fonction pour démarrer le jeu
   const handleStartGame = () => {
-    startGame();
+    startGame(roomId);
+    console.log('le jeu est lancer ')
+
   };
 
+  const endRoom = (roomId: string) => {
+    socket.emit('endRoom', roomId)
+  }
+
   return {
+    endRoom,
     availableRooms,
     currentView,
     handleViewChange,
@@ -126,7 +141,6 @@ const useLobby = () => {
     quizParams,
     setQuizParams,
     roomId,
-    roomPinDisplay,
     usersInRoom,
     setIsPrivate,
     isPrivate,

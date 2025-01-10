@@ -1,21 +1,23 @@
-import { useAtom } from 'jotai';
 import React from 'react';
-import { pin } from '../../../atoms/UserAtoms';
+import { useAtom } from 'jotai';
+import { pin, roomIdAtom, userPseudo, usersInRoomAtom } from '../../../atoms/UserAtoms';
 
 interface UserListProps {
-  roomId: string;
-  usersInRoom: { pseudo: string; role: string }[];
-  // roomPinDisplay: string | null;
   startGame: () => void;
   endRoom: (roomId: string) => void;
-  currentUserPseudo: string;
 }
 
 
-const UserList: React.FC<UserListProps> = ({ roomId, usersInRoom, startGame, currentUserPseudo, endRoom }) => {
-
+const UserList: React.FC<UserListProps> = ({  startGame, endRoom }) => {
+  const [roomId] = useAtom(roomIdAtom)
 
 const [roomPinDisplay] = useAtom(pin)
+const [usersInRoom] = useAtom(usersInRoomAtom)
+
+const [currentUserPseudo] = useAtom(userPseudo)
+
+console.log("usersInRoom:", usersInRoom);
+console.log("currentUserPseudo:", currentUserPseudo);
 
   return (
     <div>

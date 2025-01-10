@@ -10,7 +10,7 @@ import useLobby from '../../hooks/useLobby';
 // const socket = io('http://localhost:4000');
 
 const QuizApp = () => {
-  const { availableRooms, currentView, handleViewChange, isInRoom, isPrivate, message, pseudo, quizParams, roomId, roomPinDisplay, setIsPrivate, setPseudo, setQuizParams, usersInRoom, createRoom, joinRoomByPin, setRoomId,joinRoom, startGame } = useLobby();
+  const { endRoom,availableRooms, currentView, handleViewChange, isInRoom, isPrivate, message, pseudo, quizParams, roomId, setIsPrivate, setPseudo, setQuizParams, usersInRoom, createRoom, joinRoomByPin, setRoomId,joinRoom, startGame } = useLobby();
 
   const handleCreateRoom = () => {
     createRoom(roomId, pseudo, quizParams, isPrivate); 
@@ -66,9 +66,9 @@ const QuizApp = () => {
             <UserList 
               roomId={roomId} 
               usersInRoom={usersInRoom} 
-              roomPinDisplay={roomPinDisplay} 
               startGame={startGame} 
               currentUserPseudo={pseudo}
+              endRoom={endRoom}
             />
           )}
         </>

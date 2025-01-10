@@ -3,6 +3,7 @@
 import { socket } from "../config/socket.config";
 import { QuizParams } from "../types/quiz.type";
 
+
 // Fonction pour créer une room
 export const createRoom = (roomId: string, pseudo: string, quizParams: QuizParams, isPrivate: boolean) => {
   socket.emit('createRoom', roomId, pseudo, quizParams, isPrivate);
@@ -24,6 +25,6 @@ export const getRooms = () => {
 };
 
 // Fonction pour démarrer le jeu
-export const startGame = () => {
-  socket.emit('startGame');
+export const startGame = (roomId: string) => {
+  socket.emit('startGame', roomId);
 };
