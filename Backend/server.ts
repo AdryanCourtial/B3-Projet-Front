@@ -171,24 +171,25 @@ io.on('connection', (socket) => {
       room.gameState = GameState.inGame;
       io.to(roomId).emit('gameStarted', 'Le jeu commence maintenant !');
 
-      // Reset du timer à 30 secondes pour la première question
       currentQuestionTime = 30;
       
-      // Définir l'intervalle
       intervalId = setInterval(() => {
         currentQuestionTime -= 1;
         io.to(roomId).emit('updateTimer', { remainingTime: currentQuestionTime });
 
         if (currentQuestionTime <= 0) {
           if (intervalId) {
-            clearInterval(intervalId);  // Arrêter le timer
+            clearInterval(intervalId);  
           }
           io.to(roomId).emit('timeUp', 'Le temps est écoulé pour cette question!');
-          room.gameState = GameState.waiting; // Passer à l'état suivant du jeu
+          room.gameState = GameState.end; 
+          console.log(`je suis le jeu qui a finis`, room)
         }
       }, 1000);
     }
   });
+
+  
   socket.on('endGame', (roomId) => {
     const room = rooms[roomId];
     

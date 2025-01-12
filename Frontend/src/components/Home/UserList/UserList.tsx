@@ -9,12 +9,13 @@ interface UserListProps {
 
 
 const UserList: React.FC<UserListProps> = ({  startGame, endRoom }) => {
-  const [roomId] = useAtom(roomIdAtom)
+const [roomId] = useAtom(roomIdAtom)
 
 const [roomPinDisplay] = useAtom(pin)
+  
 const [usersInRoom] = useAtom(usersInRoomAtom)
 
-  const [currentUserPseudo] = useAtom(userPseudo)
+const [currentUserPseudo] = useAtom(userPseudo)
 
 console.log("usersInRoom:", usersInRoom);
 console.log("currentUserPseudo:", currentUserPseudo);

@@ -16,11 +16,11 @@ const QuizApp = () => {
     <div className="quiz-app max-w-5xl mx-auto p-6">
       {/* Contrôle de la vue */}
       {currentView === 'game' ? (
-        <Game />
+        <Game endRoom={handleEndGame} />
       ) : (
         <>
           {!isInRoom ? (
-            <>
+              <>
               <div className="button-container flex gap-4 mb-6 justify-center">
                 <button onClick={() => handleViewChange('joinRoomByPin')} className="btn-blue">Rejoindre une room privée</button>
                 <button onClick={() => handleViewChange('createRoom')} className="btn-green">Créer une room</button>

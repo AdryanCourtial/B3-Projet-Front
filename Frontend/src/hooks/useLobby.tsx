@@ -155,6 +155,7 @@ const useLobby = () => {
 
   const handleEndGame = () => {
     endRoom(roomId)
+    setIsInRoom(false)
     console.log('le jeu est finis ')
   } 
 
