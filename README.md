@@ -1,4 +1,4 @@
-## Websocket Ressource : 
+## Websocket Ressource :
 
 ```json
 
@@ -7,12 +7,13 @@
         "name" : "",
         "room_id" : "",
         "room_pin":  "",
+        "etat": "",
         "users": [
             {
                 "pseudo": "",
                 "role": ROLES,
                 "uuid": "",
-                "points": 0 | null, 
+                "points": 0 | null,
                 "alive": true | null
             }
         ],
@@ -27,7 +28,8 @@
 
 ```
 
-Convention : 
+Convention :
+
 - Fonction : PascalCase
 - Variable : snake_case
 - Constant : UPPERCASE

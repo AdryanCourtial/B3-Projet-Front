@@ -1,5 +1,6 @@
-import { QuizParams } from "./quizParameter.interface";
-import { User } from "./users.interface";
+import { User } from "./user.interface";
+import { QuizParams } from "./quizParams.interface";
+import { GameState } from "./game.enum";
 
 export interface Room {
     name: string;
@@ -7,4 +8,5 @@ export interface Room {
     room_pin: string | null; 
     users: User[];
     options: QuizParams;
-  }
+    gameState: GameState
+}
