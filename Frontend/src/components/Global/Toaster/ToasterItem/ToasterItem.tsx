@@ -15,6 +15,7 @@ const ToasterItem = ({ message, type }:Toaster) => {
         variants={toasterItemAnimation}
         initial="hidden"
         animate="visible"
+        exit="hidden"
         transition={{type: "spring"}}
         style={{
             backgroundColor: selectType()

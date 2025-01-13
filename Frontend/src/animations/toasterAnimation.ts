@@ -4,8 +4,8 @@ export const toasterItemAnimation = {
         x: '100vw',
         transition: { 
             type: 'spring', 
-            stiffness: 500,
-            damping: 30,
+            stiffness: 300,
+            damping: 20,
         }
     },
     visible: {

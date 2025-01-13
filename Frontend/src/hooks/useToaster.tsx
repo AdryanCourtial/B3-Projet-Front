@@ -1,6 +1,7 @@
 import { useAtom } from "jotai"
 import { Toaster, ToasterType } from "../types/Toaster"
 import { toasterArrayAtom } from "../atoms/atomToaster"
+import { randInt } from "three/src/math/MathUtils.js"
 
 const useToaster = () => {
 
@@ -8,16 +9,19 @@ const useToaster = () => {
 
     const useToast = (type: ToasterType, message: string) => {
         const newToaster: Toaster = {
-            message: message,
+            message: randInt(1, 20).toString(),
             type: type
         }
-        setToasterArray([...toasterArray, newToaster])
 
+        setToasterArray([...toasterArray, newToaster])
+        
         setTimeout(() => {
-            const tab: Toaster[] = [...toasterArray]
-            tab.shift()
-            setToasterArray(tab)
-          }, 3000); 
+            setToasterArray((toasterArray) => {
+                const tab: Toaster[] = [...toasterArray]
+                tab.shift()
+                return tab
+            })
+          }, 3000);
     }
 
     return {
