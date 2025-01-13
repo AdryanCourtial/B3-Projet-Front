@@ -9,7 +9,7 @@ const useToaster = () => {
 
     const useToast = (type: ToasterType, message: string) => {
         const newToaster: Toaster = {
-            message: randInt(1, 20).toString(),
+            message: message,
             type: type
         }
 
