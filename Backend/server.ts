@@ -6,9 +6,9 @@ import { VerifQuizInput } from './utils/inputsVerfication';
 import { z } from 'zod';
 import axios from 'axios';
 import { QuizParams, type Categories } from './types/quizParameter.interface';
-import { getEnabledCategories } from 'trace_events';
 import { UserRole } from './types/role.enum';
 import { GameState } from './types/game.enum';
+import { Room } from './types/room.interface';
 
 const app = express();
 const server = createServer(app); 

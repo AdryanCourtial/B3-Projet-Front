@@ -16,7 +16,7 @@ const QuizApp = () => {
     <div className="quiz-app max-w-5xl mx-auto p-6">
       {/* Contrôle de la vue */}
       {currentView === 'game' ? (
-        <Game endRoom={handleEndGame} />
+        <Game /> // ICI une redirection vers Game 
       ) : (
         <>
           {!isInRoom ? (

@@ -139,6 +139,8 @@ const useLobby = () => {
 
   // Fonction pour créer une room
     const handleCreateRoom = () => {
+    console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDD")
+    console.log(roomId, pseudo, quizParams, isPrivate)
     createRoom(roomId, pseudo, quizParams, isPrivate);  
     setIsInRoom(true); 
     setPseudo(pseudo)         
