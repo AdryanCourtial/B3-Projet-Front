@@ -3,10 +3,10 @@ import { BrowserRouter, Routes, Route } from "react-router"
 import Home from './components/Home/Home'
 import Public from './components/Public/Public'
 import Private from './components/Private/Private'
-import Lobby from './components/Lobby/Lobby'
 import Game from './components/Game/Game'
 import DefaultLayout from './layouts/DefaultLayout/DefaultLayout'
 import NoLayout from './layouts/NoLayout/NoLayout'
+import Lobby from './components/Home/Lobby_ex'
 
 function App() {
 
