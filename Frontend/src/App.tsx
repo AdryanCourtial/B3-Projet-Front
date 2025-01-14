@@ -6,7 +6,8 @@ import Private from './components/Private/Private'
 import Game from './components/Game/Game'
 import DefaultLayout from './layouts/DefaultLayout/DefaultLayout'
 import NoLayout from './layouts/NoLayout/NoLayout'
-import Lobby from './components/Home/Lobby_ex'
+import CreateLobby from './components/CreateLobby/CreateLobby'
+import Lobby from './components/Lobby/Lobby'
 
 function App() {
 
@@ -32,6 +33,12 @@ function App() {
       element={
         <NoLayout>
           <Private />
+        </NoLayout>
+      } />
+      <Route path="/qibble/createLobby"
+      element={
+        <NoLayout>
+          <CreateLobby />
         </NoLayout>
       } />
       <Route path="/qibble/lobby" element={

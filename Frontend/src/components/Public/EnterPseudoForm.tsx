@@ -1,7 +1,7 @@
 // EnterPseudoForm.tsx
 import { useAtom } from 'jotai';
 import React from 'react';
-import { userPseudo } from '../../../atoms/UserAtoms';
+import { userPseudo } from '../../atoms/UserAtoms';
 
 interface EnterPseudoFormProps {
   onSubmit: () => void;

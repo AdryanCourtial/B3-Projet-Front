@@ -31,3 +31,5 @@ export const quizParamsData = atom<QuizParams>({
 export const remainingTimeAtom = atom<number>(0)
 
 export const isTimeUpAtom = atom<boolean>(false)
+
+export const lisPublicRoomAtom = atom<boolean>(false) 
