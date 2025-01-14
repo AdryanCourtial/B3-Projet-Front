@@ -83,8 +83,8 @@ const useLobby = () => {
       setIsTimeUp(false);
     });
 
-    socket.on('roomEnded', (message) => {
-      alert(message)
+    socket.on('roomEnded', () => {
+      // alert(message)
       setIsInRoom(false)
       setUsersInRoom([]);  
       setRoomId('');
