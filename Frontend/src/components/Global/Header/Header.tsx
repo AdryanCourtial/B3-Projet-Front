@@ -8,9 +8,18 @@ const Header = () => {
             ICON
         </div>
         <div className="flex gap-4">
+
+
+          <ButtonHeader
+          to="/qibble/createLobby"
+          fontColor="linear-gradient(90deg, #57E6B8, #37D0FC)"
+          >Create Your Room !
+          </ButtonHeader>
+
           <ButtonHeader 
           to="/qibble/public"
           fontColor="linear-gradient(90deg, #57E6B8, #37D0FC)"
+          
           > Join Your Friends ! 
           </ButtonHeader>
 

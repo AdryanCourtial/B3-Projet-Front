@@ -1,11 +1,10 @@
-// useLobby.ts
-
-import {  useEffect } from "react";
+import { useEffect } from "react";
 import { socket } from "../config/socket.config";
 import { createRoom, endRoom, getRooms, joinRoom, joinRoomByPin, startGame } from "../api/homeApi";
 import { Room } from "../types/room.type";
 import { useAtom } from "jotai";
 import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
+import { useNavigate } from "react-router";
 
 const useLobby = () => {
   const [pseudo, setPseudo] = useAtom(userPseudo)
@@ -21,8 +20,11 @@ const useLobby = () => {
   const [, setRemainingTime] = useAtom(remainingTimeAtom);
   const [, setIsTimeUp] = useAtom(isTimeUpAtom)
 
+  // const [lisPublicRoom, setLisPublicRoom] = useAtom(lisPublicRoomAtom); 
+  const navigate = useNavigate();
 
   useEffect(() => {
+
 
     socket.on('updateTimer', (data) => {
       setRemainingTime(data.remainingTime);
@@ -39,21 +41,23 @@ const useLobby = () => {
 
     socket.on("availableRooms", (rooms: Room[]) => {
       setAvailableRooms(rooms);
+      console.log("Je suis les rooms disponibles", availableRoomsAtom)
     });
 
-    socket.on("roomJoined", (data: { success:boolean, roomId: string; users: { pseudo: string, role: string, points:number  }[], roomPin: string | null }) => {
+    socket.on("roomJoined", (data: { success:boolean, roomId: string; users: { pseudo: string, role: string, points:number }[], roomPin: string | null }) => {
       setRoomId(data.roomId);
       setUsersInRoom(data.users);
       setRoomPinDisplay(data.roomPin)
-      setIsInRoom(true);                  
-
+      setIsInRoom(true);  
+      navigate('/qibble/lobby');
+                
     });
 
     socket.on("message", (data: string) => {
       setMessage(data);
     });
     
-      socket.on('roomCreated', ({ roomId, roomPin, users}) => {
+    socket.on('roomCreated', ({ roomId, roomPin, users }) => {
       console.log(`Room créée: ${roomId}`);
       setRoomPinDisplay(roomPin); 
       setUsersInRoom(users)
@@ -81,6 +85,8 @@ const useLobby = () => {
       setCurrentView("game");
       setRemainingTime(30);  
       setIsTimeUp(false);
+      navigate('/qibble/game');
+
     });
 
     socket.on('roomEnded', (message) => {
@@ -88,7 +94,7 @@ const useLobby = () => {
       setIsInRoom(false)
       setUsersInRoom([]);  
       setRoomId('');
-    })
+    });
 
     socket.on("hostChanged", (newHostPseudo) => {
       setUsersInRoom((prevUsers) =>
@@ -117,53 +123,42 @@ const useLobby = () => {
     };
   }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms, setIsTimeUp, setRemainingTime]);
 
-  // Fonction pour changer de vue
-  const handleViewChange = (view: string) => {
-    setCurrentView(view);
+  const handleListRoom = () => {
     setMessage('')
-
-    if (view === "getRooms") {
-      getRooms();
-    }
+    getRooms();
   };
 
-  // Fonction pour rejoindre une room
   const handleJoinRoom = (roomId: string, pseudo: string) => {
     joinRoom(roomId, pseudo);  
-    setPseudo(pseudo)         
+    setPseudo(pseudo);         
   };
 
-  const handleJoinRoomByPin = (enteredPin: string) => {
+  const handleJoinRoomByPin = (enteredPin: string, pseudo: string) => {
     joinRoomByPin(enteredPin, pseudo);  
   };
 
-  // Fonction pour créer une room
-    const handleCreateRoom = () => {
-    console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDD")
+  const handleCreateRoom = () => {
     console.log(roomId, pseudo, quizParams, isPrivate)
     createRoom(roomId, pseudo, quizParams, isPrivate);  
     setIsInRoom(true); 
-    setPseudo(pseudo)         
-    setCurrentView('UserList');  
-    };
-
-
-  // Fonction pour démarrer le jeu
-  const handleStartGame = () => {
-    startGame(roomId);
-    console.log('le jeu est lancer ')
-
+    setPseudo(pseudo);         
+    navigate('/qibble/lobby');
   };
 
-  const handleEndGame = () => {
+  const handleStartGame = () => {
+    startGame(roomId);
+    console.log('le jeu est lancé');
+  };
+
+  const handleEndGame = (roomId: string) => {
     endRoom(roomId)
     setIsInRoom(false)
-    console.log('le jeu est finis ')
-  } 
+    console.log('le jeu est fini');
+  };
 
   return {
     handleEndGame,
-    handleViewChange,
+    handleListRoom,
     handleJoinRoom,
     handleJoinRoomByPin,
     handleCreateRoom,
