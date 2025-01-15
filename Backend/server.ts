@@ -39,14 +39,15 @@ io.on('connection', (socket) => {
     }
 
     rooms[roomId] = {
-      name: roomId,           
-      room_id: roomId,        
-      room_pin: roomPin,      
+      name: roomId,
+      room_id: roomId,
+      room_pin: roomPin,
       users: [{              
         pseudo: pseudo,
-        role: UserRole.host,       
-        uuid: socket.id,     
+        role: UserRole.host,
+        uuid: socket.id,
         points: 0,
+        
         alive: true
       }],
       options: quizParams,
@@ -313,6 +314,23 @@ io.on('connection', (socket) => {
         socket.emit('dataResponseQuiz', response.data);    
       })
     })
+
+    socket.on('verifAnswer', (data: { answer: string | null, user: string, indexQuestion: number, timeStamp: number }) => {
+      // il nous faut rajouter une nouvelle array de questions lorsque l'utilisateur lance le jeux dans l'object room
+      console.log(`Le Users : ${data?.user} a répondu ${data.answer}`)
+
+      // Si l'utilisateur a répondu quelque chose alors on compare la string avec la bonne réponse lié a l'index de la question
+      // On y calcule alors les points lié au timeStamp et si il est juste ou pas
+
+      // Sinon l'utilsateur n'a rien répondu alors answer seras null
+      // Du coup aucun point n'est ajouté
+
+      // A la fin on renvoie la Correction répoonse et les points de chaque utilisateur
+      console.log(socket.rooms)
+
+      // (Faculatatif on peut renvoyer aussi le nombre de peronnes qui ont cliqué sur chaque réponse)
+
+    });
 });
 
 // Lancer le serveur
