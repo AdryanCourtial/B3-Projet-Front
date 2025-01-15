@@ -46,7 +46,7 @@ function App() {
           <Lobby />
         </DefaultLayout>
         } />
-      <Route path="/qibble/game/:uuid"
+      <Route path="/qibble/game"
       element={
         <NoLayout>
           <Game />

@@ -3,7 +3,7 @@ import { socket } from "../config/socket.config";
 import { createRoom, endRoom, getRooms, joinRoom, joinRoomByPin, startGame } from "../api/homeApi";
 import { Room } from "../types/room.type";
 import { useAtom } from "jotai";
-import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom, lisPublicRoomAtom } from "../atoms/UserAtoms";
+import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
 import { useNavigate } from "react-router";
 
 const useLobby = () => {
@@ -20,15 +20,11 @@ const useLobby = () => {
   const [, setRemainingTime] = useAtom(remainingTimeAtom);
   const [, setIsTimeUp] = useAtom(isTimeUpAtom)
 
-  const [lisPublicRoom, setLisPublicRoom] = useAtom(lisPublicRoomAtom); 
+  // const [lisPublicRoom, setLisPublicRoom] = useAtom(lisPublicRoomAtom); 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (lisPublicRoom) {
-      setMessage('');
-      getRooms();
-      setLisPublicRoom(false);
-    }
+
 
     socket.on('updateTimer', (data) => {
       setRemainingTime(data.remainingTime);
@@ -52,7 +48,9 @@ const useLobby = () => {
       setRoomId(data.roomId);
       setUsersInRoom(data.users);
       setRoomPinDisplay(data.roomPin)
-      setIsInRoom(true);                  
+      setIsInRoom(true);  
+      navigate('/qibble/lobby');
+                
     });
 
     socket.on("message", (data: string) => {
@@ -63,7 +61,6 @@ const useLobby = () => {
       console.log(`Room créée: ${roomId}`);
       setRoomPinDisplay(roomPin); 
       setUsersInRoom(users)
-      setLisPublicRoom(true); // Mettre lisPublicRoom à true pour déclencher la récupération des rooms
     });
 
     socket.on("updateUsers", (users: { pseudo: string, socketId: string, role: string, points:number }[]) => {
@@ -88,6 +85,8 @@ const useLobby = () => {
       setCurrentView("game");
       setRemainingTime(30);  
       setIsTimeUp(false);
+      navigate('/qibble/game');
+
     });
 
     socket.on('roomEnded', (message) => {
@@ -122,12 +121,11 @@ const useLobby = () => {
       socket.off("gameStarted");
       socket.off("hostChanged");
     };
-  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms, setIsTimeUp, setRemainingTime, lisPublicRoom]);
+  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms, setIsTimeUp, setRemainingTime]);
 
   const handleListRoom = () => {
     setMessage('')
     getRooms();
-    setLisPublicRoom(false); // Réinitialiser lisPublicRoom après avoir récupéré les rooms
   };
 
   const handleJoinRoom = (roomId: string, pseudo: string) => {

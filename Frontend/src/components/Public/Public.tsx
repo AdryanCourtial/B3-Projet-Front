@@ -1,4 +1,4 @@
-import React, {  useState } from 'react';
+import React, {  useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { availableRoomsAtom, messageServer, userPseudo } from '../../atoms/UserAtoms';
 import { Room } from '../../types/room.type';
@@ -8,7 +8,14 @@ import useLobby from '../../hooks/useLobby';
 
 
 
+
 const Public: React.FC = () => {
+
+  const {handleListRoom} = useLobby()
+
+  useEffect(()=>{
+    handleListRoom()
+  }),[handleListRoom]
 
   const {  handleJoinRoom  } = useLobby();
 

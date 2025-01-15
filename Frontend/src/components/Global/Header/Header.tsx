@@ -19,6 +19,7 @@ const Header = () => {
           <ButtonHeader 
           to="/qibble/public"
           fontColor="linear-gradient(90deg, #57E6B8, #37D0FC)"
+          
           > Join Your Friends ! 
           </ButtonHeader>
 
