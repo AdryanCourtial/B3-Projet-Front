@@ -16,6 +16,5 @@ export const randomizeArrayAswerAtom = atom(
     null,
     (_, set) => {
       set(arrayRandomizeAtom, shuffle([0, 1, 2, 3]));
-      console.log("TESSSST")
     }
   );

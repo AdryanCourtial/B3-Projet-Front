@@ -3,6 +3,9 @@ import { useEffect } from "react"
 import { answerChoosedAtom, questionAtom, questionIndexAtom, quizStatusAtom, randomizeArrayAswerAtom } from "../atoms/gameAtom"
 import { getQuizQuestionsRequest } from "../api/gameApi"
 import useToaster from "./useToaster"
+import { redirect } from "react-router"
+import { socket } from "../config/socket.config"
+import { string } from "three/webgpu"
 
 export const useGame = () => {
 
@@ -11,7 +14,7 @@ export const useGame = () => {
     const [quizStatus, setQuizStatus] = useAtom(quizStatusAtom)
     const [, setAnswerChoosed] = useAtom(answerChoosedAtom)
     const [, randomizeAnswer] = useAtom(randomizeArrayAswerAtom)
-    
+
     const { useToast } = useToaster()
 
     useEffect(() => {
@@ -50,7 +53,7 @@ export const useGame = () => {
 
     const onAnswerPressed = (answer: string) => {
         setAnswerChoosed(answer)
-        useToast('erreur',  "WOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW")
+        socket.emit('verifAnswer', answer)
     }
     
     return {
