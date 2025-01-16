@@ -11,20 +11,18 @@ import useLobby from '../../hooks/useLobby';
 
 const Public: React.FC = () => {
 
-  const {handleListRoom} = useLobby()
 
   useEffect(()=>{
     handleListRoom()
-  }),[handleListRoom]
+  },[])
 
-  const {  handleJoinRoom  } = useLobby();
+  const {  handleJoinRoom, handleListRoom  } = useLobby();
 
   const [availableRooms] = useAtom(availableRoomsAtom)
   const [pseudo] = useAtom(userPseudo)
   const [isJoining, setIsJoining] = useState<boolean>(false);  
   const [roomToJoin, setRoomToJoin] = useState<Room | null>(null); 
 
-console.log('Available Rooms:', availableRooms);
   const [message] = useAtom(messageServer)
 
   const handleJoinClick = (room: Room) => {

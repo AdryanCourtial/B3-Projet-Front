@@ -5,6 +5,7 @@ import { useAtom } from "jotai";
 import { questionAtom, questionIndexAtom, quizStatusAtom } from "../../atoms/gameAtom";
 import Statistiques from "./Stats/Stats";
 import Results from "./Results/Results";
+import ProgressBar from "./ProgressBar/progressBar";
 
 
 export default function Game({  }) {
@@ -17,7 +18,8 @@ export default function Game({  }) {
     return (
         <div className="max-h-screen h-screen">
             { quizStatus === 'question' ? (
-            <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full">
+                <ProgressBar />
                 <Question>
                     { questions?.quizzes[questionIndex].question ?? 'Erreur lors du chargement de la questions !' }
                 </Question>
