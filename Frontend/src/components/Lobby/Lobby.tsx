@@ -4,8 +4,6 @@ import {   pin, roomIdAtom, userPseudo, usersInRoomAtom } from '../../atoms/User
 import useLobby from '../../hooks/useLobby';
 
 
-
-
 const Lobby: React.FC = () => {
 
 const {handleStartGame, handleEndGame} = useLobby()

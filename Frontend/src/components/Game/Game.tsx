@@ -24,7 +24,7 @@ export default function Game({  }) {
                 <AnswerList 
                 onAnswerPressed={onAnswerPressed}
                 />
-                <button onClick={nextQuestion}>Next</button>
+                <button onClick={nextQuestion}> Next </button>
             </div>
             ) : quizStatus === 'stat' ? (
             <div>

@@ -326,7 +326,7 @@ io.on('connection', (socket) => {
       // Du coup aucun point n'est ajouté
 
       // A la fin on renvoie la Correction répoonse et les points de chaque utilisateur
-      console.log(socket.rooms)
+      console.log(rooms)
 
       // (Faculatatif on peut renvoyer aussi le nombre de peronnes qui ont cliqué sur chaque réponse)
 
