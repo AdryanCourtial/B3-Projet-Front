@@ -212,6 +212,14 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('onMessage', (message: string, users: string ) => {
+    console.log('Users :' + users + "Said : " + message)
+    socket.broadcast.emit('onMessage', {
+      users: users,
+      message: message
+    })
+  });
+
   socket.on('restartGame', (roomId) => {
     const room = rooms[roomId]
 

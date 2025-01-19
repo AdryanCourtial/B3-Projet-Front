@@ -2,6 +2,7 @@ import React from 'react';
 import { useAtom } from 'jotai';
 import {   pin, roomIdAtom, userPseudo, usersInRoomAtom } from '../../atoms/UserAtoms';
 import useLobby from '../../hooks/useLobby';
+import LobbyChat from './LobbyChat/LobbyChat';
 
 
 
@@ -39,8 +40,8 @@ console.log("currentUserPseudo:", currentUserPseudo);
         ))}
       </ul>
       {roomPinDisplay && <div>Pin de la room: {roomPinDisplay}</div>}
+      <LobbyChat></LobbyChat>
     </div>
-
   );
 };
 
