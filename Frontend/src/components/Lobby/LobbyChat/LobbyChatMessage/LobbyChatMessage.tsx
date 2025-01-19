@@ -16,7 +16,7 @@ const LobbyChatMessage: FC = () => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
-  }, [inputChat]); 
+  }, [inputChat]);
   
 
   return (

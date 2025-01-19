@@ -21,6 +21,8 @@ const LobbyChatInput: React.FC<Props> = ({ sendMessage }) => {
 
   const Submit = (data:any) => {
 
+    if (data.message === '') return
+    
     sendMessage({ 
       message: data.message,
       users: currentUserPseudo
