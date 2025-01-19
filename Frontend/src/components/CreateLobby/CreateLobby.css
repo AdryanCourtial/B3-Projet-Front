@@ -1,0 +1,54 @@
+.page-public {
+    background: linear-gradient(90deg, var(--main-green), var(--main-blue));
+}
+
+.content {
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+
+.formulaire_create > div {
+    width: 90%;
+    height: 50px;
+    border-radius: 10px;
+    border: 2px solid var(--main-black);
+}
+
+button,
+input[type="text"] {
+    width: 100%;
+    text-align: center;
+    height: 100%;
+    border-radius: 10px;
+}
+
+button[type="submit"] {
+    background: linear-gradient(90deg, var(--main-green), var(--main-blue));
+}
+
+input[type="text"] {
+    background-color: #f5f5f5;
+}
+
+select[type="select"] {
+    background-color: #f5f5f5;
+}
+
+@media screen and (min-width: 730px){
+
+    .formulaire_create > div {
+        width: 45%;
+        height: 100px;
+    }
+
+}
+
+.formulaire_create {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}

@@ -13,21 +13,16 @@ const Header = () => {
           <ButtonHeader
           to="/qibble/createLobby"
           fontColor="linear-gradient(90deg, #57E6B8, #37D0FC)"
-          >Create Your Room !
+          > Play Now !
           </ButtonHeader>
 
           <ButtonHeader 
           to="/qibble/public"
-          fontColor="linear-gradient(90deg, #57E6B8, #37D0FC)"
+          fontColor="linear-gradient(90deg, #FA5A7C, #B274EF)"
           
           > Join Your Friends ! 
           </ButtonHeader>
 
-          <ButtonHeader
-          to="/qibble/private"
-          fontColor="linear-gradient(90deg, #FA5A7C, #B274EF"
-          > Play Now !  
-          </ButtonHeader>
         </div>
       </div>
     </header>

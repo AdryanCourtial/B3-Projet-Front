@@ -2,7 +2,7 @@ import React, {  useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { availableRoomsAtom, messageServer, userPseudo } from '../../atoms/UserAtoms';
 import { Room } from '../../types/room.type';
-import EnterPseudoForm from './EnterPseudoForm';
+import EnterPseudoForm from './EnterPseudoForm/EnterPseudoForm';
 import useLobby from '../../hooks/useLobby';
 
 
@@ -11,7 +11,7 @@ import useLobby from '../../hooks/useLobby';
 
 const Public: React.FC = () => {
 
-  const {handleListRoom} = useLobby()
+  const { handleListRoom } = useLobby()
 
   useEffect(()=>{
     handleListRoom()

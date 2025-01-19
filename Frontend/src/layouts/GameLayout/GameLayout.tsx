@@ -1,6 +1,6 @@
 export default function GameLayout() {
     return (
-        <div>
+        <div className="overscroll-y-none">
             LAYOUT GAME
         </div>
     )

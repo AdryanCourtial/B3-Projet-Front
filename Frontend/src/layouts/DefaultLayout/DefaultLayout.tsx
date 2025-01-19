@@ -8,11 +8,11 @@ type Props = {
 
 export default function DefaultLayout({ children }: Props) {
     return (
-        <>
+        <div> 
             <Header />
                 { children }
             <Footer />
-        </>
+        </div>
     )
   }
   

@@ -1,6 +1,7 @@
 import { useAtom } from 'jotai';
 import React from 'react';
-import { isPrivateAtom, roomIdAtom, userPseudo } from '../../../atoms/UserAtoms';
+import { isPrivateAtom, roomIdAtom, userPseudo } from '../../../../atoms/UserAtoms';
+import "./RoomForm.css"
 
 interface RoomFormProps {
 
@@ -26,7 +27,7 @@ const RoomForm: React.FC<RoomFormProps> = ({ createRoom }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className='formulaire_create'>
       <div>
         <input
           type="text"
@@ -45,17 +46,19 @@ const RoomForm: React.FC<RoomFormProps> = ({ createRoom }) => {
           onChange={(e) => setRoomId(e.target.value)}
         />
       </div>
-      <div>
+      <div className='flex justify-center gap-4 items-center h-[100px] bg-[#f5f5f5]'>
         <label>
           Room privée
-          <input
-            type="checkbox"
-            checked={isPrivate}
-            onChange={() => setIsPrivate(!isPrivate)}
-          />
         </label>
+        <input
+          type="checkbox"
+          checked={isPrivate}
+          onChange={() => setIsPrivate(!isPrivate)}
+        />
       </div>
-      <button type="submit">Créer une room</button>
+      <div>
+        <button type="submit">Créer une room</button>
+      </div>
     </form>
   );
 };
