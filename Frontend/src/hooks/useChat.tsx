@@ -21,8 +21,7 @@ export const useChat = () => {
     }, [socket])
 
     const sendMessage = (data: ChatInterface) => {
-        onMessage(data.message, data.users)
-        setInputChat((inputChat) => [...inputChat, data])
+        onMessage(data.message, data.users, data.roomId)
     }
 
     return {

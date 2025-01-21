@@ -20,7 +20,7 @@ const LobbyChatMessage: FC = () => {
   
 
   return (
-    <div className='chat-box flex-1 h-[500px] overscroll-auto overflow-auto'
+    <div className='chat-box flex-1 h-[500px] overscroll-auto overflow-auto py-4 px-4 overscroll-x-none break-words overflow-x-hidden'
     ref={chatBoxRef}>
         {
           inputChat.map((value, index) => (

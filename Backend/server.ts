@@ -212,9 +212,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('onMessage', (message: string, users: string ) => {
-    console.log('Users :' + users + "Said : " + message)
-    socket.broadcast.emit('onMessage', {
+  socket.on('onMessage', (message: string, users: string, roomId: string) => {
+    io.to(roomId).emit('onMessage', {
       users: users,
       message: message
     })

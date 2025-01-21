@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { userPseudo } from "../../../../atoms/UserAtoms";
+import { roomIdAtom, userPseudo } from "../../../../atoms/UserAtoms";
 import { ChatInterface } from "../../../../types/chat.interface";
 
 interface Props {
@@ -19,13 +19,16 @@ const LobbyChatInput: React.FC<Props> = ({ sendMessage }) => {
 
   const [currentUserPseudo] = useAtom(userPseudo)
 
+  const [roomId, _] = useAtom(roomIdAtom)
+
   const Submit = (data:any) => {
 
     if (data.message === '') return
     
     sendMessage({ 
       message: data.message,
-      users: currentUserPseudo
+      users: currentUserPseudo,
+      roomId: roomId
     })
     reset()
   }

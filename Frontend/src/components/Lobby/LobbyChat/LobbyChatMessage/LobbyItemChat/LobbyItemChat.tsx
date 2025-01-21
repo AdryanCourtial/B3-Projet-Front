@@ -13,14 +13,14 @@ const LobbyItemChat: React.FC<Props> = ({ children, username }) => {
 const [uPseudo, setUserPseudo] = useAtom(userPseudo)
 
   return (
-    <div className="flex flex-row px-4">
-        <div className="w-[20%]">
-            <p className="text-xl">
-                { username ===  uPseudo ? 'Vous : ' : username + " :"}
+    <div className="flex flex-row max-w-full">
+        <div className="w-fit">
+            <p className="text-xl text-blue-700 pr-2 w-auto whitespace-nowrap">
+                { username ===  uPseudo ? 'Vous :' : username + " :"}
             </p>
         </div>
-        <div className="flex-1">
-            <p className="text-xl">
+        <div className="w-full">
+            <p className="text-xl break-words">
                 { children }
             </p>
         </div>

@@ -12,7 +12,7 @@ const LobbyChat: React.FC = () => {
     const { sendMessage } = useChat()
 
   return (
-    <div className='bg-slate-300 h-[400px] fixed left-4 bottom-4 right-4 max-w-[500px] flex flex-col rounded-[10px]'>
+    <div className='bg-slate-300 h-[400px] fixed left-4 bottom-4 right-4 max-w-[500px] flex flex-col rounded-[10px] border border-black'>
         <LobbyChatHeader></LobbyChatHeader>
         <LobbyChatMessage></LobbyChatMessage>
         <LobbyChatInput
