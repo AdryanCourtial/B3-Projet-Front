@@ -9,6 +9,7 @@ import { QuizParams, type Categories } from './types/quizParameter.interface';
 import { UserRole } from './types/role.enum';
 import { GameState } from './types/game.enum';
 import { Room } from './types/room.interface';
+import { QuizData } from './types/quiz.interface';
 
 const app = express();
 const server = createServer(app); 
@@ -20,14 +21,12 @@ const io = new Server(server, {
   },
 });
 
-// Définition des types pour les utilisateurs et les rooms
 
-// Stocker les rooms avec leurs paramètres et les utilisateurs
 let rooms: { [roomId: string]: Room } = {}; 
 
 let gameTimer = null;  
 let currentQuestionTime = 30;  
-let intervalId: NodeJS.Timeout | null = null; // type explicite pour intervalId
+let intervalId: NodeJS.Timeout | null = null; 
 
 io.on('connection', (socket) => {
   console.log('Un utilisateur est connecté', socket.id);
@@ -51,12 +50,26 @@ io.on('connection', (socket) => {
         alive: true
       }],
       options: quizParams,
-      gameState: GameState.waiting
+      gameState: GameState.waiting,
+      questions: {    
+        count: 0,     
+        quizzes: []   
+      },
+      currentQuestionIndex: 0
     };
 
-    // console.log(rooms[roomId].users);
-    socket.join(roomId); // Ajouter l'utilisateur à la room
-    // console.log(`${pseudo} a créé la room ${roomId} avec les paramètres`, quizParams);
+    axios.get(`https://quizzapi.jomoreschi.fr/api/v1/quiz?category=${quizParams.category}&difficulty=${quizParams.difficulty}&limit=${quizParams.limit}`)
+      .then((response) => {
+        const quizData: QuizData = response.data;  // L'API devrait répondre sous cette forme
+        rooms[roomId].questions = quizData; // Stockage dans la room
+        console.log('Questions stockées:', quizData.quizzes);    
+        console.log('Questions all:', quizData);       // io.to(roomId).emit('dataResponseQuiz', response.data);
+      })
+      .catch((error) => {
+          console.log('Erreur de récupération des questions', error);
+      });
+
+    socket.join(roomId); 
 
     io.to(roomId).emit('message', `${pseudo} a créé la room avec les paramètres: ${JSON.stringify(quizParams)}`);
     socket.emit('roomCreated', { roomId, roomPin, users: rooms[roomId].users });
@@ -92,7 +105,7 @@ io.on('connection', (socket) => {
       console.log('Utilisateurs dans la room après ajout:', room.users);
 
       io.to(roomId).emit('updateUsers', room.users);
-      socket.emit('roomJoined', { roomId: room.name, users: room.users,  });
+      socket.emit('roomJoined', { roomId: room.name, users: room.users, currentQuestionIndex: room.currentQuestionIndex, currentQuestion: room.questions.quizzes[room.currentQuestionIndex]  });
 
     } else {
       socket.emit('error', { success: false, message:'La room n\'existe pas.',});
@@ -178,6 +191,10 @@ io.on('connection', (socket) => {
     if (room) {
       room.gameState = GameState.inGame;
       io.to(roomId).emit('gameStarted', 'Le jeu commence maintenant !');
+      io.to(roomId).emit('dataResponseQuiz', room.questions);
+
+      console.log(`Je suis les questiosn envoyé au front `, room.questions)
+
 
       currentQuestionTime = 30;
       
@@ -190,12 +207,56 @@ io.on('connection', (socket) => {
             clearInterval(intervalId);  
           }
           io.to(roomId).emit('timeUp', 'Le temps est écoulé pour cette question!');
-          room.gameState = GameState.end; 
+          // room.gameState = GameState.end; 
           console.log(`je suis le jeu qui a finis`, room)
         }
       }, 1000);
     }
   });
+
+    socket.on('nextQuestion', (roomId) => {
+      const room = rooms[roomId];
+      if (room) {
+          // Vérifie si on est à la dernière question
+          if (room.currentQuestionIndex >= room.questions.quizzes.length - 1) {
+              room.gameState = GameState.end; 
+              io.to(roomId).emit('quizFinished', 'Le quiz est terminé.');
+              console.log(`Le quiz pour la room ${roomId} est terminé.`);
+
+              return;
+          }
+
+          currentQuestionTime = 30;
+      
+          intervalId = setInterval(() => {
+            currentQuestionTime -= 1;
+            io.to(roomId).emit('updateTimer', { remainingTime: currentQuestionTime });
+    
+            if (currentQuestionTime <= 0) {
+              if (intervalId) {
+                clearInterval(intervalId);  
+              }
+              io.to(roomId).emit('timeUp', 'Le temps est écoulé pour cette question!');
+              console.log(`je suis le jeu qui a finis`, room)
+            }
+          }, 1000);
+    
+          room.currentQuestionIndex += 1;
+
+          const nextQuestion = room.questions.quizzes[room.currentQuestionIndex];
+          io.to(roomId).emit('updateQuestion', { 
+              question: nextQuestion.question, 
+              answers: nextQuestion.answer, 
+              index: room.currentQuestionIndex 
+          });
+
+          console.log(`Prochaine question pour la room ${roomId}:`, nextQuestion);
+      } else {
+          console.error(`La room ${roomId} n'existe pas.`);
+      }
+  });
+
+
 
   
   socket.on('endGame', (roomId) => {
@@ -286,54 +347,47 @@ io.on('connection', (socket) => {
       }
     });
 
-    socket.on('getQuestions', (data: QuizParams) => {
 
-      const {category, difficulty, gamemode, limit } = data
-  
-      const QuizParams: any = {
-        category : category,
-        difficulty : difficulty,
-        gamemode : gamemode,
-        limit : limit,
+
+    socket.on('verifAnswer', (data) => {
+      const { roomId ,answer, user, questionIndex, timeStamp } = data;
+
+      console.log(`L'utilisateur : ${data.user} a répondu : ${answer}`);
+
+      const room = rooms[data.roomId]; 
+      if (!room) {
+        console.log(`Room non trouvée pour l'utilisateur : ${user}`);
+        return;
       }
-  
-      const VerifQuizInput = z.object({
-        category: z.string(),
-        difficulty: z.string(),
-        gamemode: z.string(),
-        limit: z.number()
-      })
-  
-      VerifQuizInput.parse(QuizParams)
-  
-  
-      axios({
-        method: 'GET',
-        url: `https://quizzapi.jomoreschi.fr/api/v1/quiz?category=${QuizParams.category}&difficulty=${QuizParams.difficulty}&limit=${QuizParams.limit}`,
-      }).then((response) => {
-        socket.emit('dataResponseQuiz', response.data);    
-      })
-    })
 
-    socket.on('verifAnswer', (data: { answer: string | null, user: string, indexQuestion: number, timeStamp: number }) => {
-      // il nous faut rajouter une nouvelle array de questions lorsque l'utilisateur lance le jeux dans l'object room
-      console.log(`Le Users : ${data?.user} a répondu ${data.answer}`)
+      const currentQuestion = room.questions?.quizzes?.[questionIndex];
+      
+      if (!currentQuestion) {
+        console.log(`Question non trouvée pour l'index ${questionIndex} dans la room ${roomId}`);
+        return;
+      }
+      
+      const correctAnswer = currentQuestion.answer; 
 
-      // Si l'utilisateur a répondu quelque chose alors on compare la string avec la bonne réponse lié a l'index de la question
-      // On y calcule alors les points lié au timeStamp et si il est juste ou pas
+      let points = 0;
 
-      // Sinon l'utilsateur n'a rien répondu alors answer seras null
-      // Du coup aucun point n'est ajouté
+      if (answer && answer === correctAnswer) {
+        points = Math.max(0, 1000 - (30 - timeStamp) * 33);
+        console.log(`L'utilisateur a gagné ${points} points ! et a repondu en ${timeStamp} secondes`);
+      }
+      
+      const userIndex = room.users.findIndex(u => u.pseudo === user);
+      if (userIndex !== -1) {
+        room.users[userIndex].points += points;
+        console.log(`je suis le contenue du user ${room.users[userIndex].points}`)
+      }
 
-      // A la fin on renvoie la Correction répoonse et les points de chaque utilisateur
-      console.log(rooms)
-
-      // (Faculatatif on peut renvoyer aussi le nombre de peronnes qui ont cliqué sur chaque réponse)
-
+      io.to(data.roomId).emit('updateUsers', room.users);
     });
+
 });
 
-// Lancer le serveur
+
 server.listen(4000, () => {
   console.log('Serveur démarré sur http://localhost:4000');
 });

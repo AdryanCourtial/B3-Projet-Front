@@ -1,6 +1,7 @@
 import { User } from "./user.interface";
 import { QuizParams } from "./quizParams.interface";
 import { GameState } from "./game.enum";
+import { QuizData } from "./quiz.interface";
 
 export interface Room {
     name: string;
@@ -8,5 +9,7 @@ export interface Room {
     room_pin: string | null; 
     users: User[];
     options: QuizParams;
-    gameState: GameState
+    gameState: GameState;
+    questions: QuizData;
+    currentQuestionIndex: number
 }

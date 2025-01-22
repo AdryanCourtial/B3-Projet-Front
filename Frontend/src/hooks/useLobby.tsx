@@ -5,6 +5,8 @@ import { Room } from "../types/room.type";
 import { useAtom } from "jotai";
 import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
 import { useNavigate } from "react-router";
+// import { getQuizQuestionsRequest } from "../api/gameApi";
+import { questionAtom } from "../atoms/gameAtom";
 
 const useLobby = () => {
   const [pseudo, setPseudo] = useAtom(userPseudo)
@@ -19,6 +21,8 @@ const useLobby = () => {
   const [, setRoomPinDisplay] = useAtom(pin)
   const [, setRemainingTime] = useAtom(remainingTimeAtom);
   const [, setIsTimeUp] = useAtom(isTimeUpAtom)
+    const [, setQuestions] = useAtom(questionAtom)
+  
 
   // const [lisPublicRoom, setLisPublicRoom] = useAtom(lisPublicRoomAtom); 
   const navigate = useNavigate();
@@ -63,6 +67,11 @@ const useLobby = () => {
       setUsersInRoom(users)
     });
 
+    socket.on('dataResponseQuiz', (questions) => {
+      setQuestions(questions);  
+  });
+
+
     socket.on("updateUsers", (users: { pseudo: string, socketId: string, role: string, points:number }[]) => {
       setUsersInRoom(users);
     });
@@ -87,6 +96,10 @@ const useLobby = () => {
       setIsTimeUp(false);
       navigate('/qibble/game');
 
+    });
+
+    socket.on('questionChanged', () => {
+      navigate('/qibble/game');
     });
 
     socket.on('roomEnded', (message) => {
@@ -147,6 +160,7 @@ const useLobby = () => {
 
   const handleStartGame = () => {
     startGame(roomId);
+
     console.log('le jeu est lancé');
   };
 

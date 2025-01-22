@@ -3,7 +3,7 @@ import { useAtom } from "jotai";
 import { arrayRandomizeAtom, questionAtom, questionIndexAtom } from "../../../atoms/gameAtom";
 
 interface Props {
-    onAnswerPressed: (answer: string) => void
+    onAnswerPressed: (answer: string ) => void
 }
 
 export default function AnswerList({ onAnswerPressed }: Props) {
