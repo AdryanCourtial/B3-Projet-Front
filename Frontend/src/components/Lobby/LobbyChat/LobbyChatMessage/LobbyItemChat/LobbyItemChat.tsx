@@ -10,7 +10,7 @@ interface Props {
 
 const LobbyItemChat: React.FC<Props> = ({ children, username }) => {
 
-const [uPseudo, setUserPseudo] = useAtom(userPseudo)
+const [uPseudo, _] = useAtom(userPseudo)
 
   return (
     <div className="flex flex-row max-w-full">
