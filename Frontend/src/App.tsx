@@ -42,9 +42,9 @@ function App() {
         </NoLayout>
       } />
       <Route path="/qibble/lobby" element={
-        <DefaultLayout>
+        <NoLayout>
           <Lobby />
-        </DefaultLayout>
+        </NoLayout>
         } />
       <Route path="/qibble/game"
       element={

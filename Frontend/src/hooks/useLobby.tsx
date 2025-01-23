@@ -12,7 +12,7 @@ const useLobby = () => {
   const [quizParams] = useAtom(quizParamsData)
   const [, setAvailableRooms] = useAtom(availableRoomsAtom)
   const [, setMessage] = useAtom(messageServer)
-  const [, setUsersInRoom] = useAtom(usersInRoomAtom)
+  const [usersInRoom, setUsersInRoom] = useAtom(usersInRoomAtom)
   const [, setIsInRoom] = useAtom(etatRoom)
   const [isPrivate] = useAtom(isPrivateAtom)
   const [, setCurrentView] = useAtom(currentviewEtat)
@@ -156,13 +156,25 @@ const useLobby = () => {
     console.log('le jeu est fini');
   };
 
+  const VerifyHostUsersInRoom = () => {
+    const user = usersInRoom.find((value) => value.pseudo === pseudo)
+
+    console.log(user)
+    if (user?.role === 'host') {
+      return true
+    } 
+
+    return false
+  }
+
   return {
     handleEndGame,
     handleListRoom,
     handleJoinRoom,
     handleJoinRoomByPin,
     handleCreateRoom,
-    handleStartGame    
+    handleStartGame,
+    VerifyHostUsersInRoom
   };
 };
 
