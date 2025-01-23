@@ -18,9 +18,6 @@ const [usersInRoom] = useAtom(usersInRoomAtom)
 
 const [currentUserPseudo] = useAtom(userPseudo)
 
-console.log("usersInRoom:", usersInRoom);
-console.log("currentUserPseudo:", currentUserPseudo);
-
   return (
     <div>
       <h1>Room: {roomId}</h1>
