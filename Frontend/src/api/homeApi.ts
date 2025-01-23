@@ -30,6 +30,10 @@ export const startGame = (roomId: string) => {
 };
 
 
- export const endRoom = (roomId: string) => {
-    socket.emit('endRoom', roomId)
-  }
+export const endRoom = (roomId: string) => {
+   socket.emit('endRoom', roomId)
+}
+
+export const onMessage = (message: string, users: string, roomId: string) => {
+  socket.emit('onMessage', message, users, roomId)
+}

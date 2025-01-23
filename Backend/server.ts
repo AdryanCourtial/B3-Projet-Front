@@ -212,6 +212,13 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('onMessage', (message: string, users: string, roomId: string) => {
+    io.to(roomId).emit('onMessage', {
+      users: users,
+      message: message
+    })
+  });
+
   socket.on('restartGame', (roomId) => {
     const room = rooms[roomId]
 
