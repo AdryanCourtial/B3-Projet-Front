@@ -162,8 +162,8 @@ io.on('connection', (socket) => {
 
       roomFound.users.push({
         pseudo: pseudo,
-        role: UserRole.player,       // Rôle initial
-        uuid: socket.id,      // ID unique
+        role: UserRole.player,       
+        uuid: socket.id,     
         points: 0,
         alive: true
       });
@@ -176,7 +176,7 @@ io.on('connection', (socket) => {
       io.to(roomFound.room_id).emit('message', `${pseudo} a rejoint la room`);
 
       io.to(roomFound.room_id).emit('updateUsers', roomFound.users);
-        socket.emit('roomJoined', { roomId: roomFound.name, users: roomFound.users, roomPin: roomFound.room_pin });
+        socket.emit('roomJoined', { roomId: roomFound.name, users: roomFound.users, roomPin: roomFound.room_pin, currentQuestionIndex: roomFound.currentQuestionIndex, currentQuestion: roomFound.questions.quizzes[roomFound.currentQuestionIndex] });
 
 
     } else {
@@ -213,48 +213,51 @@ io.on('connection', (socket) => {
       }, 1000);
     }
   });
+  let intervalId: NodeJS.Timeout | null = null;
 
-    socket.on('nextQuestion', (roomId) => {
+  socket.on('nextQuestion', (roomId) => {
       const room = rooms[roomId];
       if (room) {
-          // Vérifie si on est à la dernière question
-          if (room.currentQuestionIndex >= room.questions.quizzes.length - 1) {
-              room.gameState = GameState.end; 
-              io.to(roomId).emit('quizFinished', 'Le quiz est terminé.');
-              console.log(`Le quiz pour la room ${roomId} est terminé.`);
 
-              return;
-          }
+        const countQuestion = room.questions.count - 1
+          if (room.currentQuestionIndex >= countQuestion) {
+            room.gameState = GameState.end; 
+            io.to(roomId).emit('quizFinished', 'Le quiz est terminé.'); 
 
+            return; 
+        }
+  
           currentQuestionTime = 30;
-      
+  
+          if (intervalId !== null) {
+              clearInterval(intervalId);
+              intervalId = null;
+          }
+  
           intervalId = setInterval(() => {
-            currentQuestionTime -= 1;
-            io.to(roomId).emit('updateTimer', { remainingTime: currentQuestionTime });
-    
-            if (currentQuestionTime <= 0) {
-              if (intervalId) {
-                clearInterval(intervalId);  
+              currentQuestionTime -= 1;
+              io.to(roomId).emit('updateTimer', { remainingTime: currentQuestionTime });
+  
+              if (currentQuestionTime <= 0) {
+                  clearInterval(intervalId as NodeJS.Timeout);
+                  intervalId = null;
+                  io.to(roomId).emit('timeUp', 'Le temps est écoulé pour cette question!');
               }
-              io.to(roomId).emit('timeUp', 'Le temps est écoulé pour cette question!');
-              console.log(`je suis le jeu qui a finis`, room)
-            }
           }, 1000);
-    
+  
           room.currentQuestionIndex += 1;
 
+          console.log(`Je suis l'index actuel de la question, ${room.currentQuestionIndex}`)
+  
           const nextQuestion = room.questions.quizzes[room.currentQuestionIndex];
-          io.to(roomId).emit('updateQuestion', { 
-              question: nextQuestion.question, 
-              answers: nextQuestion.answer, 
-              index: room.currentQuestionIndex 
+          io.to(roomId).emit('updateQuestion', {
+              question: nextQuestion.question,
+              answers: nextQuestion.answer,
+              index: room.currentQuestionIndex,
           });
-
-          console.log(`Prochaine question pour la room ${roomId}:`, nextQuestion);
-      } else {
-          console.error(`La room ${roomId} n'existe pas.`);
       }
   });
+  
 
 
 
@@ -274,19 +277,59 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('restartGame', (roomId) => {
-    const room = rooms[roomId]
+
+  socket.on('restartGame', async (roomId) => {
+    const room = rooms[roomId];
 
     if (room && room.gameState === GameState.end) {
-      room.gameState = GameState.inGame
-      room.users.forEach(user => {
-        user.points = 0
-      })
+        try {
 
-      io.to(roomId).emit('gameRestarted', 'le jeu vas recommencer')
-      console.log(`Le jeu de la room ${roomId} vas redémarrer`)
+            room.gameState = GameState.inGame;
+            room.currentQuestionIndex = 0;
+            room.users.forEach(user => {
+                user.points = 0; 
+            });
+
+            const quizParams = room.options;
+            const response = await axios.get(`https://quizzapi.jomoreschi.fr/api/v1/quiz?category=${quizParams.category}&difficulty=${quizParams.difficulty}&limit=${quizParams.limit}`);
+            room.questions = response.data; 
+            console.log(`Je suis les questiosn envoyé au front `, room.questions)
+
+            currentQuestionTime = 30;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+
+            intervalId = setInterval(() => {
+                currentQuestionTime -= 1;
+                io.to(roomId).emit('updateTimer', { remainingTime: currentQuestionTime });
+
+                if (currentQuestionTime <= 0) {
+                    clearInterval(intervalId as NodeJS.Timeout);
+                    intervalId = null;
+                    io.to(roomId).emit('timeUp', 'Le temps est écoulé pour cette question!');
+                }
+            }, 1000);
+
+            io.to(roomId).emit('gameRestarted', {
+                message: 'Le jeu va recommencer',
+                roomState: {
+                    users: room.users,
+                    questions: room.questions,
+                    currentQuestionIndex: room.currentQuestionIndex,
+                },
+            });
+
+            console.log(`Le jeu de la room ${roomId} a redémarré avec de nouvelles questions`);
+        } catch (error) {
+            console.error(`Erreur lors du rechargement des questions pour la room ${roomId}:`, error);
+            io.to(roomId).emit('error', 'Impossible de redémarrer le jeu. Réessayez plus tard.');
+        }
     }
-  })
+});
+
+
 
   socket.on('endRoom', (roomId) => {
     const room = rooms[roomId];
