@@ -11,7 +11,7 @@ const ToasterItem = ({ message, type }:Toaster) => {
     }
 
     return (
-        <motion.div className="w-full min-h-[100px] h-auto px-8 flex items-center rounded-[10px] shadow-2xl"
+        <motion.div className="w-full min-h-[100px] h-auto px-8 flex items-center rounded-[10px] shadow-2xl "
         variants={toasterItemAnimation}
         initial="hidden"
         animate="visible"

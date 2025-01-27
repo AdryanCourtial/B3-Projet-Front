@@ -8,7 +8,7 @@ const ToasterList = () => {
     const [toasterArray] = useAtom(toasterArrayAtom)
 
     return (
-        <div className="absolute top-0 right-0 w-[500px] h-auto flex flex-col gap-4 p-4">
+        <div className="absolute top-0 right-0 w-[500px] h-auto flex flex-col gap-4 p-4 overflow-hidden">
             <AnimatePresence>
                 {
                     toasterArray.map((component, index) => (

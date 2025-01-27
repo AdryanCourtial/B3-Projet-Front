@@ -17,9 +17,9 @@ export default function Game({  }) {
     const [quizStatus] = useAtom(quizStatusAtom)
 
     return (
-        <div className="max-h-screen h-screen">
+        <div className="max-h-screen h-screen w-screen overflow-hidden overscroll-none">
             { quizStatus === 'question' ? (
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full w-full overflow-hidden overscroll-none">
                 <Question>
                     { questions?.quizzes[questionIndex].question ?? 'Erreur lors du chargement de la questions !' }
                 </Question>
