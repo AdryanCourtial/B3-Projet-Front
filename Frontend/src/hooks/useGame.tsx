@@ -111,7 +111,6 @@
         
             return () => {
                 socket.off('redirectToLobby');
-                socket.off("updateQuestion");
                 socket.off('quizFinished');
                 socket.off("updateUsers");
                 socket.off("gameRestarted");

@@ -16,7 +16,7 @@ export default function ProgressBar() {
           height: "20px",
           backgroundColor: "#ddd",
           borderRadius: "10px",
-          position: "relative", 
+          position: "relative",
         }}
       >
         <motion.div
