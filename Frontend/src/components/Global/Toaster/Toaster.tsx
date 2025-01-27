@@ -9,7 +9,7 @@ const Toaster = () => {
     const { useToast } = useToaster()
 
     return (
-        <div className="absolute top-0 right-0 w-[400px]">
+        <div className="absolute top-0 right-0 w-[400px] bg">
             {  }
         </div>
     )

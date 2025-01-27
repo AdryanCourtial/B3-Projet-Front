@@ -7,7 +7,6 @@ import Lobby from './components/Lobby/Lobby'
 import Game from './components/Game/Game'
 import DefaultLayout from './layouts/DefaultLayout/DefaultLayout'
 import NoLayout from './layouts/NoLayout/NoLayout'
-import Toaster from './components/Global/Toaster/Toaster'
 
 function App() {
 
