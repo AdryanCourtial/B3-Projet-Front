@@ -95,38 +95,16 @@
                 setGameStatistics(statistics); 
             });
 
-                socket.on('redirectToLobby', ({ message, users }) => {
-                    console.log(message);
-                    setUsersInRoom(users);
-                    navigate('/qibble/lobby');
-                    setAnswerChoosed('');
-                    setQuestionIndex(0)
-                    setRemainingTime(30);  
-                    setIsTimeUp(false);
-                    setIsAlive(true); 
-                    setQuestions(null)
-                });         
-                    
         
             return () => {
                 socket.off('redirectToLobby');
-                socket.off('quizFinished');
                 socket.off("updateUsers");
                 socket.off("gameRestarted");
                 socket.off('gameOver');
 
             };
         }, [
-            setQuizStatus,
-            setQuestionIndex,
-            setAnswerChoosed,
-            setQuestions,
-            setRemainingTime,
-            setIsTimeUp,
-            setUsersInRoom,
-            randomizeAnswer,
-            setGameStatistics,
-            setIsAlive
+
         ]);
         
     
@@ -136,6 +114,7 @@
 
             if (questions) {
                 if (questionIndex < questions.quizzes.length - 1) {
+                    console.log("je suis l'index de la question", questions.quizzes.length - 1)
                     handleNextQuestion(); 
                     console.log('Next Question Triggered:', questionIndex);
 

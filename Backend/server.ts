@@ -288,7 +288,6 @@ io.on('connection', (socket) => {
       io.to(roomId).emit('gameEnded', 'Le jeu est terminé ! Voulez-vous redémarrer ?');
       console.log(`Le jeu a terminé dans la room ${roomId}`);
 
-      // Arrêter le timer si le jeu est terminé
       if (intervalId) {
         clearInterval(intervalId);
       }
@@ -353,27 +352,22 @@ io.on('connection', (socket) => {
                     currentQuestionIndex: room.currentQuestionIndex,
                 },
             });
+          
+            const firstQuestion = room.questions.quizzes[room.currentQuestionIndex];
+            if (firstQuestion) {
+                console.log(`Première question après restart :`, firstQuestion);
+                io.to(roomId).emit('updateQuestion', {
+                    question: firstQuestion.question,
+                    answers: firstQuestion.answer,
+                    index: room.currentQuestionIndex,
+                });
+            }
 
             console.log(`Le jeu de la room ${roomId} a redémarré avec de nouvelles questions`);
         } catch (error) {
             console.error(`Erreur lors du rechargement des questions pour la room ${roomId}:`, error);
             io.to(roomId).emit('error', 'Impossible de redémarrer le jeu. Réessayez plus tard.');
         }
-    }
-});
-
-  
-  socket.on('redirectToLobby', (roomId) => {
-    const room = rooms[roomId];
-
-    if (room) {
-        room.gameState = GameState.waiting; 
-        io.to(roomId).emit('redirectToLobby', {
-            message: 'La partie est terminée. Retour au lobby.',
-            users: room.users,
-        });
-    } else {
-        console.error(`Room non trouvée : ${roomId}`);
     }
 });
 

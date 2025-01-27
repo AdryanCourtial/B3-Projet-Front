@@ -4,7 +4,7 @@ import { createRoom, endRoom, getRooms, joinRoom, joinRoomByPin, startGame } fro
 import { Room } from "../types/room.type";
 import { useAtom } from "jotai";
 import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
-import { redirect, useNavigate } from "react-router";
+import {  useNavigate } from "react-router";
 // import { getQuizQuestionsRequest } from "../api/gameApi";
 import { questionAtom, quizStatusAtom, roomGamemodeAtom } from "../atoms/gameAtom";
 import { QuizGameMode } from "../types/quiz.enum";
