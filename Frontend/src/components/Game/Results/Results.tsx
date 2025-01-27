@@ -17,6 +17,7 @@ export default function Results() {
     const isHost = usersInRoom.some(user => user.pseudo === currentUserPseudo && user.role === "host");
     
     return (
+        
         <div className="flex flex-col items-center justify-center h-screen">
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
