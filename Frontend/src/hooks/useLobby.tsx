@@ -5,6 +5,9 @@ import { Room } from "../types/room.type";
 import { useAtom } from "jotai";
 import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
 import { redirect, useNavigate } from "react-router";
+// import { getQuizQuestionsRequest } from "../api/gameApi";
+import { questionAtom, quizStatusAtom, roomGamemodeAtom } from "../atoms/gameAtom";
+import { QuizGameMode } from "../types/quiz.enum";
 
 const useLobby = () => {
   const [pseudo, setPseudo] = useAtom(userPseudo)
@@ -19,6 +22,11 @@ const useLobby = () => {
   const [, setRoomPinDisplay] = useAtom(pin)
   const [, setRemainingTime] = useAtom(remainingTimeAtom);
   const [, setIsTimeUp] = useAtom(isTimeUpAtom)
+    const [, setQuestions] = useAtom(questionAtom)
+  const [, setGamemode] = useAtom(roomGamemodeAtom)
+
+  const [, setQuizStatus] = useAtom(quizStatusAtom)
+    
 
   // const [lisPublicRoom, setLisPublicRoom] = useAtom(lisPublicRoomAtom); 
   const navigate = useNavigate();
@@ -43,8 +51,9 @@ const useLobby = () => {
       console.log("Je suis les rooms disponibles", availableRoomsAtom)
     });
 
-    socket.on("roomJoined", (data: { success:boolean, roomId: string; users: { pseudo: string, role: string, points:number }[], roomPin: string | null }) => {
+    socket.on("roomJoined", (data: { success:boolean, roomId: string; users: { pseudo: string, role: string, points:number, alive:boolean }[], gamemode: QuizGameMode , roomPin: string | null }) => {
       setRoomId(data.roomId);
+      setGamemode(data.gamemode)
       setUsersInRoom(data.users);
       setRoomPinDisplay(data.roomPin)
       setIsInRoom(true);  
@@ -56,13 +65,19 @@ const useLobby = () => {
       setMessage(data);
     });
     
-    socket.on('roomCreated', ({ roomId, roomPin, users }) => {
+    socket.on('roomCreated', ({ roomId, roomPin, users, gamemode }) => {
       console.log(`Room créée: ${roomId}`);
       setRoomPinDisplay(roomPin); 
+      setGamemode(gamemode)
       setUsersInRoom(users)
     });
 
-    socket.on("updateUsers", (users: { pseudo: string, socketId: string, role: string, points:number }[]) => {
+    socket.on('dataResponseQuiz', (questions) => {
+      setQuestions(questions);  
+  });
+
+
+    socket.on("updateUsers", (users: { pseudo: string, socketId: string, role: string, points:number, alive: boolean }[]) => {
       setUsersInRoom(users);
     });
 
@@ -85,14 +100,19 @@ const useLobby = () => {
       setRemainingTime(30);  
       setIsTimeUp(false);
       navigate('/qibble/game');
-
+      setQuizStatus('question')
     });
+
+    // socket.on('questionChanged', () => {
+    //   navigate('/qibble/game');
+    // });
 
     socket.on('roomEnded', (message) => {
       alert(message)
       setIsInRoom(false)
       setUsersInRoom([]);  
       setRoomId('');
+      
     });
 
     socket.on("hostChanged", (newHostPseudo) => {
@@ -120,8 +140,8 @@ const useLobby = () => {
       socket.off("gameStarted");
       socket.off("hostChanged");
     };
-  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms, setIsTimeUp, setRemainingTime]);
-
+  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage,
+    setAvailableRooms, setIsTimeUp, setRemainingTime, navigate, setGamemode, setQuestions, setQuizStatus]);
 
   const handleListRoom = () => {
     setMessage('')
@@ -147,6 +167,7 @@ const useLobby = () => {
 
   const handleStartGame = () => {
     startGame(roomId);
+
     console.log('le jeu est lancé');
   };
 

@@ -7,8 +7,6 @@ import UserList from './UserList/UserList';
 import "./Lobby.css"
 import useVerifyReload from '../../hooks/useVerifyReload';
 
-
-
 const Lobby: React.FC = () => {
 
 const {handleStartGame, handleEndGame, VerifyHostUsersInRoom} = useLobby()

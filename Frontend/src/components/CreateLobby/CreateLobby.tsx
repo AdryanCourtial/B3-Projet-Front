@@ -30,3 +30,5 @@ const CreateLobby: FC = () => {
 };
 
 export default CreateLobby;
+
+

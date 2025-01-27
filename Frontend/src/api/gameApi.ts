@@ -1,28 +1,17 @@
-import { io } from "socket.io-client";
-import { QuizQuestionsResponseInterface } from "../types/quizQuestions";
+import { socket } from "../config/socket.config";
 
-export const getQuizQuestionsRequest = (): Promise<QuizQuestionsResponseInterface | null> => {
-    const socket = io('http://localhost:4000');
+export const nextQuestionForTimer = (roomId: string) => {
+  socket.emit('nextQuestion', roomId);
+};
 
-    return new Promise((resolve, reject) => {
+export const restartGame = (roomId: string) => {
+  socket.emit('restartGame', roomId);
+};
 
-        socket.emit('getQuestions', {
-            category: 'actu_politique',
-            difficulty: 'difficile',
-            gamemode: 'normal',
-            limit: 4
-        })
-        
-       socket.on('dataResponseQuiz', (data) => {
+export const returnLobby = (roomId: string) => {
+  socket.emit('leaveRoom', roomId); 
+};
 
-        if (!data) {
-            reject()
-        } 
-
-        resolve(data)
-
-        })
-        
-    })
-
-}
+export const RedirectToLobby = (roomId: string) => {
+    socket.emit('redirectToLobby', roomId);
+};

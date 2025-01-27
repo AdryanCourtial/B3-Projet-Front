@@ -1,3 +1,8 @@
+import { useAtom } from "jotai";
+import { answerChoosedAtom } from "../../../../atoms/gameAtom";
+import { isTimeUpAtom } from "../../../../atoms/UserAtoms";
+import { object } from "framer-motion/client";
+
 interface Props {
     children: string
     onAnswerPressed: (answer: string) => void
@@ -5,9 +10,12 @@ interface Props {
 }
 
 export default function AnswerItems({ children, onAnswerPressed, id }: Props) {
+    
+    const [answerChoosed] = useAtom(answerChoosedAtom);
+    const [isTimeUp] = useAtom(isTimeUpAtom);
 
     const ColorBorder = () => {
-
+        
         let object: React.CSSProperties = {}
 
         switch (id) {
@@ -41,14 +49,26 @@ export default function AnswerItems({ children, onAnswerPressed, id }: Props) {
     }
 
     return (
-        <div className="flex flex-row justify-center items-center bg-white max-w-[500px] w-full h-[100%] rounded-[10px] lg:h-[100%] cursor-pointer"
-        onClick={() => onAnswerPressed(children)}
-        style={ColorBorder()}
+        <div
+            className="flex flex-row justify-center items-center max-w-[500px] w-full h-[100%] rounded-[10px] lg:h-[100%] cursor-pointer"
+            style={Object.assign({}, {
+                opacity: isTimeUp
+                    ? answerChoosed
+                        ? children === answerChoosed
+                            ? '100%' 
+                            : '60%' 
+                        : '60%' 
+                    : !answerChoosed || children === answerChoosed
+                    ? '100%' 
+                    : '60%', 
+                pointerEvents: isTimeUp || answerChoosed ? 'none' : 'auto',
+            }, ColorBorder())
+        }
+            onClick={
+                !isTimeUp && !answerChoosed ? () => onAnswerPressed(children) : undefined
+            }
         >
-            <p>
-                { children }
-            </p>
+            <p>{children}</p>
         </div>
-    )
-  }
-  
+    );
+}
