@@ -5,7 +5,7 @@ interface Props {
 
 const LinearGradientText = ({ children, colorGradient }: Props) => {
     return (
-        <span style={{ background: colorGradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"}}>
+        <span style={{ background: colorGradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontSize: 'ineterit'}}>
         { children }
         </span>
     )
