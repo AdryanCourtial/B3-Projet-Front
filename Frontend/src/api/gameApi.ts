@@ -11,3 +11,7 @@ export const restartGame = (roomId: string) => {
 export const returnLobby = (roomId: string) => {
   socket.emit('leaveRoom', roomId); 
 };
+
+export const RedirectToLobby = (roomId: string) => {
+    socket.emit('redirectToLobby', roomId);
+};

@@ -17,6 +17,7 @@ export default function Game() {
 
     const [isAlive] = useAtom(isAliveAtom)
 
+
     if (quizStatus === 'finish') {
         return (
                 <Results />
@@ -30,7 +31,22 @@ export default function Game() {
                 <p className="text-lg mt-4">
                     Merci d'avoir joué. Vous pouvez attendre la fin du jeu pour voir les résultats.
                 </p>
+                <ul>
+                    {usersInRoom.map((user, index) => (
+                        <li key={index}>
+                            {user.role === 'host' && user.pseudo === currentUserPseudo && (
+                                <button
+                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+                                    onClick={nextQuestion}
+                                >
+                                    Next
+                                </button>
+                            )}
+                        </li>
+                    ))}
+                </ul>
             </div>
+            
         );
     }
     

@@ -4,7 +4,7 @@
     import {  useNavigate } from "react-router"
     import { socket } from "../config/socket.config"
     import { isAliveAtom, isTimeUpAtom, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms"
-    import { nextQuestionForTimer, restartGame, returnLobby } from "../api/gameApi"
+    import { nextQuestionForTimer, RedirectToLobby, restartGame, returnLobby } from "../api/gameApi"
 
 
     export const useGame = () => {
@@ -24,10 +24,14 @@
         const [, setIsAlive] = useAtom(isAliveAtom)
         const navigate = useNavigate()
 
-
+        const [isTimeUp] = useAtom(isTimeUpAtom)
 
         useEffect(() => {
 
+                if (isTimeUp) {
+                    console.log("Le temps est écoulé, passage à la question suivante.");
+                    nextQuestion(); 
+                }
 
             socket.on('playerEliminated', ({ message }) => {
                 console.log(message);
@@ -45,13 +49,15 @@
             });
 
             socket.on("gameRestarted", ({ roomState }) => {
+                console.log("Réception de l'état de la room après redémarrage :", roomState);
+                console.log("je suis les question ,", roomState.questions)
                 setQuizStatus("question");
-                setQuestionIndex(roomState.currentQuestionIndex); 
-                setAnswerChoosed('');
                 setQuestions(roomState.questions);
+                setAnswerChoosed('');
                 setRemainingTime(30);  
                 setIsTimeUp(false);
-                setIsAlive(true); 
+                setIsAlive(true);
+                navigate('/qibble/game');
 
                 setUsersInRoom(roomState.users); 
                 console.log("Le jeu a redémarré !");
@@ -89,9 +95,22 @@
                 setQuizStatus('finish'); 
                 setGameStatistics(statistics); 
             });
-        
+
+                socket.on('redirectToLobby', ({ message, users }) => {
+                    console.log(message);
+                    setUsersInRoom(users);
+                    navigate('/qibble/lobby');
+                    setAnswerChoosed('');
+                    setQuestionIndex(0)
+                    setRemainingTime(30);  
+                    setIsTimeUp(false);
+                    setIsAlive(true); 
+                    setQuestions(null)
+                });         
+                    
         
             return () => {
+                socket.off('redirectToLobby');
                 socket.off("updateQuestion");
                 socket.off('quizFinished');
                 socket.off("updateUsers");
@@ -108,13 +127,14 @@
             setIsTimeUp,
             setUsersInRoom,
             randomizeAnswer,
-            setGameStatistics
+            setGameStatistics,
+            setIsAlive
         ]);
         
     
 
         const nextQuestion = () => {
-            console.log('Questions:', questions);
+            console.log('Passage à la question suivante:', questionIndex);
 
             if (questions) {
                 if (questionIndex < questions.quizzes.length - 1) {
@@ -154,8 +174,12 @@
         navigate('/'); 
     };
 
-
-    return {
+    const handleRedirectToLobby = () => {
+        RedirectToLobby(roomId)
+    }
+    
+        return {
+        handleRedirectToLobby,
         handleNextQuestion,
         nextQuestion,
         onAnswerPressed,

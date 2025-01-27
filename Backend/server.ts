@@ -216,12 +216,12 @@ io.on('connection', (socket) => {
             clearInterval(intervalId);  
           }
           io.to(roomId).emit('timeUp', 'Le temps est écoulé pour cette question!');
-          // room.gameState = GameState.end; 
           console.log(`je suis le jeu qui a finis`, room)
         }
       }, 1000);
     }
   });
+
   let intervalId: NodeJS.Timeout | null = null;
 
   socket.on('nextQuestion', (roomId) => {
@@ -231,7 +231,7 @@ io.on('connection', (socket) => {
         const countQuestion = room.questions.count - 1
           if (room.currentQuestionIndex >= countQuestion) {
             room.gameState = GameState.end; 
-
+            console.log("je suis letat de la room", room.gameState)
             const statistics = room.questions.quizzes.map((q) => ({
               question: q.question,
               correctAnswer: q.answer,
@@ -305,12 +305,20 @@ io.on('connection', (socket) => {
             room.gameState = GameState.inGame;
             room.currentQuestionIndex = 0;
             room.users.forEach(user => {
-                user.points = 0; 
+              user.points = 0; 
+              user.alive = true;
+
             });
 
             const quizParams = room.options;
             const response = await axios.get(`https://quizzapi.jomoreschi.fr/api/v1/quiz?category=${quizParams.category}&difficulty=${quizParams.difficulty}&limit=${quizParams.limit}`);
             room.questions = response.data; 
+          
+              room.questions.quizzes.forEach((q) => {
+                q.stats = q.stats || { choices: {}, correct: 0 };
+            });
+
+
             console.log(`Je suis les questiosn envoyé au front `, room.questions)
 
             currentQuestionTime = 30;
@@ -344,6 +352,21 @@ io.on('connection', (socket) => {
             console.error(`Erreur lors du rechargement des questions pour la room ${roomId}:`, error);
             io.to(roomId).emit('error', 'Impossible de redémarrer le jeu. Réessayez plus tard.');
         }
+    }
+});
+
+  
+  socket.on('redirectToLobby', (roomId) => {
+    const room = rooms[roomId];
+
+    if (room) {
+        room.gameState = GameState.waiting; 
+        io.to(roomId).emit('redirectToLobby', {
+            message: 'La partie est terminée. Retour au lobby.',
+            users: room.users,
+        });
+    } else {
+        console.error(`Room non trouvée : ${roomId}`);
     }
 });
 

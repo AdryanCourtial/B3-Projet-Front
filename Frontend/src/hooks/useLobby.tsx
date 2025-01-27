@@ -6,7 +6,7 @@ import { useAtom } from "jotai";
 import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
 import { useNavigate } from "react-router";
 // import { getQuizQuestionsRequest } from "../api/gameApi";
-import { questionAtom, roomGamemodeAtom } from "../atoms/gameAtom";
+import { questionAtom, quizStatusAtom, roomGamemodeAtom } from "../atoms/gameAtom";
 import { QuizGameMode } from "../types/quiz.enum";
 
 const useLobby = () => {
@@ -23,8 +23,10 @@ const useLobby = () => {
   const [, setRemainingTime] = useAtom(remainingTimeAtom);
   const [, setIsTimeUp] = useAtom(isTimeUpAtom)
     const [, setQuestions] = useAtom(questionAtom)
-  const [,setGamemode] = useAtom(roomGamemodeAtom)
-  
+  const [, setGamemode] = useAtom(roomGamemodeAtom)
+
+  const [, setQuizStatus] = useAtom(quizStatusAtom)
+    
 
   // const [lisPublicRoom, setLisPublicRoom] = useAtom(lisPublicRoomAtom); 
   const navigate = useNavigate();
@@ -99,18 +101,19 @@ const useLobby = () => {
       setRemainingTime(30);  
       setIsTimeUp(false);
       navigate('/qibble/game');
-
+      setQuizStatus('question')
     });
 
-    socket.on('questionChanged', () => {
-      navigate('/qibble/game');
-    });
+    // socket.on('questionChanged', () => {
+    //   navigate('/qibble/game');
+    // });
 
     socket.on('roomEnded', (message) => {
       alert(message)
       setIsInRoom(false)
       setUsersInRoom([]);  
       setRoomId('');
+      
     });
 
     socket.on("hostChanged", (newHostPseudo) => {
@@ -138,7 +141,8 @@ const useLobby = () => {
       socket.off("gameStarted");
       socket.off("hostChanged");
     };
-  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms, setIsTimeUp, setRemainingTime]);
+  }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage,
+    setAvailableRooms, setIsTimeUp, setRemainingTime, navigate, setGamemode, setQuestions, setQuizStatus]);
 
   const handleListRoom = () => {
     setMessage('')
