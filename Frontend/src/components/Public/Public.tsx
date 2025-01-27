@@ -11,8 +11,14 @@ import useLobby from '../../hooks/useLobby';
 
 const Public: React.FC = () => {
 
-  
   const {  handleJoinRoom, handleListRoom  } = useLobby();
+
+  useEffect(()=>{
+    handleListRoom()
+  }),[handleListRoom]
+
+
+  
   
   const [availableRooms] = useAtom(availableRoomsAtom)
   const [pseudo] = useAtom(userPseudo)
@@ -48,7 +54,7 @@ const Public: React.FC = () => {
           room.roomPin === null ? (
             <li key={room.roomId}>  
               Room ID: {room.roomId} - {room.usersCount} joueurs
-              <button onClick={() => handleJoinClick(room)}>Rejoindre</button>
+              <button className='w-4 text-lg' onClick={() => handleJoinClick(room)}>Rejoindre</button>
 
               {isJoining && roomToJoin?.roomId === room.roomId && (
                 <EnterPseudoForm 
