@@ -35,7 +35,6 @@
 
             socket.on('playerEliminated', ({ message }) => {
                 console.log(message);
-                alert(message);
 
                 setIsAlive(false); 
             });
