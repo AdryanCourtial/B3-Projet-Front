@@ -7,6 +7,7 @@ import Lobby from './components/Lobby/Lobby'
 import Game from './components/Game/Game'
 import DefaultLayout from './layouts/DefaultLayout/DefaultLayout'
 import NoLayout from './layouts/NoLayout/NoLayout'
+import Toaster from './components/Global/Toaster/ToasterList'
 
 function App() {
 
@@ -28,28 +29,26 @@ function App() {
             </NoLayout>
             } />
 
-          <Route path="/qibble/private"
-          element={
-            <NoLayout>
-              <Private />
-            </NoLayout>
-          } />
-          <Route path="/qibble/lobby" element={
-            <>
-            <NoLayout>
-              <Lobby />
-            </NoLayout>
-            </>
-            } />
-          <Route path="/qibble/game/:uuid"
-          element={
-            <NoLayout>
-              <Game />
-            </NoLayout>
-          } />
-          
-        </Routes>
-      </BrowserRouter>
+      <Route path="/qibble/private"
+      element={
+        <NoLayout>
+          <Private />
+        </NoLayout>
+      } />
+      <Route path="/qibble/lobby" element={
+        <DefaultLayout>
+          <Lobby />
+        </DefaultLayout>
+        } />
+      <Route path="/qibble/game/:uuid"
+      element={
+        <NoLayout>
+          <Game />
+        </NoLayout>
+      } />
+      
+    </Routes>
+  </BrowserRouter>
   )
 }
 
