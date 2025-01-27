@@ -5,10 +5,12 @@ import { useAtom } from "jotai";
 import { questionAtom, questionIndexAtom, quizStatusAtom } from "../../atoms/gameAtom";
 import Statistiques from "./Stats/Stats";
 import Results from "./Results/Results";
+import useVerifyReload from "../../hooks/useVerifyReload";
 
 
 export default function Game({  }) {
 
+    useVerifyReload()
     const { nextQuestion, onAnswerPressed } = useGame()
     const [questions] = useAtom(questionAtom)
     const [questionIndex] = useAtom(questionIndexAtom)

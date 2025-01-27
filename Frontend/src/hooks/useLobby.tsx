@@ -4,7 +4,7 @@ import { createRoom, endRoom, getRooms, joinRoom, joinRoomByPin, startGame } fro
 import { Room } from "../types/room.type";
 import { useAtom } from "jotai";
 import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
-import { useNavigate } from "react-router";
+import { redirect, useNavigate } from "react-router";
 
 const useLobby = () => {
   const [pseudo, setPseudo] = useAtom(userPseudo)
@@ -24,7 +24,6 @@ const useLobby = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-
 
     socket.on('updateTimer', (data) => {
       setRemainingTime(data.remainingTime);
@@ -122,6 +121,7 @@ const useLobby = () => {
       socket.off("hostChanged");
     };
   }, [setCurrentView, setIsInRoom, setRoomId, setRoomPinDisplay, setUsersInRoom, setMessage, setAvailableRooms, setIsTimeUp, setRemainingTime]);
+
 
   const handleListRoom = () => {
     setMessage('')

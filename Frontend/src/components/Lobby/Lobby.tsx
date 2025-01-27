@@ -5,12 +5,15 @@ import useLobby from '../../hooks/useLobby';
 import LobbyChat from './LobbyChat/LobbyChat';
 import UserList from './UserList/UserList';
 import "./Lobby.css"
+import useVerifyReload from '../../hooks/useVerifyReload';
 
 
 
 const Lobby: React.FC = () => {
 
 const {handleStartGame, handleEndGame, VerifyHostUsersInRoom} = useLobby()
+
+useVerifyReload()
 
 const [roomId] = useAtom(roomIdAtom)
 
