@@ -9,18 +9,24 @@ const Header = () => {
         </div>
         <div className="flex gap-4">
 
+        <ButtonHeader
+          to="/qibble/private"
+          fontColor="linear-gradient(90deg, #57E6B8, #37D0FC)"
+          > Rejoins tes amies !
+          </ButtonHeader>
+
 
           <ButtonHeader
           to="/qibble/createLobby"
           fontColor="linear-gradient(90deg, #57E6B8, #37D0FC)"
-          > Play Now !
+          > Commencer Maintenant
           </ButtonHeader>
 
           <ButtonHeader 
           to="/qibble/public"
           fontColor="linear-gradient(90deg, #FA5A7C, #B274EF)"
           
-          > Join Your Friends ! 
+          > Découvrer !
           </ButtonHeader>
 
         </div>
