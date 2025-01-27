@@ -4,7 +4,7 @@ import { useGame } from "../../hooks/useGame";
 import { useAtom } from "jotai";
 import { questionAtom, questionIndexAtom, quizStatusAtom } from "../../atoms/gameAtom";
 import Results from "./Results/Results";
-import { userPseudo, usersInRoomAtom } from "../../atoms/UserAtoms";
+import { isAliveAtom, userPseudo, usersInRoomAtom } from "../../atoms/UserAtoms";
 import ProgressBar from "./ProgressBar/progressBar";
 
 export default function Game() {
@@ -15,11 +15,25 @@ export default function Game() {
     const [usersInRoom] = useAtom(usersInRoomAtom);
     const [currentUserPseudo] = useAtom(userPseudo);
 
+    const [isAlive] = useAtom(isAliveAtom)
+
     if (quizStatus === 'finish') {
         return (
                 <Results />
         );
     }
+
+    if (!isAlive) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen">
+                <h1 className="text-3xl font-bold text-red-500">Vous avez été éliminé !</h1>
+                <p className="text-lg mt-4">
+                    Merci d'avoir joué. Vous pouvez attendre la fin du jeu pour voir les résultats.
+                </p>
+            </div>
+        );
+    }
+    
 
     if (quizStatus === 'question') {
         return (

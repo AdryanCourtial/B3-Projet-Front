@@ -15,6 +15,7 @@ export enum QuizDifficulty {
 }
 
 export enum QuizGameMode{
-    classic = 'classic'
+    mort_subite = 'mort_subite',
+    normal = 'normal'
 }
 

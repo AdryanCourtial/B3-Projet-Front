@@ -1,41 +1,38 @@
-import { useAtom } from "jotai";
-import { usersInRoomAtom, userPseudo, roomIdAtom } from "../../../atoms/UserAtoms";
-import { socket } from "../../../config/socket.config";
+
 import { useGame } from "../../../hooks/useGame";
+import { motion } from "framer-motion";
+import GameStatistics from "./GameStatistics/GameStatistics";
+import UserResults from "./UserResults/UserResults";
+import { useAtom } from "jotai";
+import { roomGamemodeAtom } from "../../../atoms/gameAtom";
+import { userPseudo, usersInRoomAtom } from "../../../atoms/UserAtoms";
 
 export default function Results() {
-    const [usersInRoom] = useAtom(usersInRoomAtom); // Liste des utilisateurs dans la room
-    const [currentUserPseudo] = useAtom(userPseudo); // Pseudo de l'utilisateur actuel
-    const [roomId] = useAtom(roomIdAtom); // ID de la room actuelle
+    const { handleRestartGame, handleLeaveRoom } = useGame();
+    const [gamemode] = useAtom(roomGamemodeAtom);
+    const [usersInRoom] = useAtom(usersInRoomAtom);
+    const [currentUserPseudo] = useAtom(userPseudo);
 
-    const {handleRestartGame} = useGame()
 
-    // Fonction pour émettre l'événement de redémarrage
-    // const restartGame = () => {
-    //     socket.emit("restartGame", roomId);
-    // };
-
-    // Vérifie si l'utilisateur actuel est l'hôte
     const isHost = usersInRoom.some(user => user.pseudo === currentUserPseudo && user.role === "host");
-
+    
     return (
         <div className="flex flex-col items-center justify-center h-screen">
-            <h2 className="text-2xl font-bold mb-4">Scores finaux</h2>
-            <ul className="mb-6">
-                {usersInRoom.map((user, index) => (
-                    <li key={index} className="text-lg">
-                        {user.pseudo}: {user.points} points
-                    </li>
-                ))}
-            </ul>
-            {isHost && (
-                <button
-                    onClick={handleRestartGame}
-                    className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-700"
-                >
-                    Relancer le jeu
-                </button>
-            )}
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+            >
+                <h2 className="text-2xl font-bold mb-4">Scores finaux</h2>
+            </motion.div>
+            <UserResults onRestartGame={handleRestartGame} isHost={isHost}  gamemode={gamemode}/>
+            <button
+                onClick={handleLeaveRoom}
+                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-700 mt-4"
+            >
+                Retour au menu principal
+            </button>
+            <GameStatistics />
         </div>
     );
 }

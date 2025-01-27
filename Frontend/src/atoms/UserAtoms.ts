@@ -11,7 +11,7 @@ export const pin = atom<string | null>('')
 
 export const etatRoom = atom<boolean>(false)
 
-export const usersInRoomAtom = atom<{ pseudo: string; role: string; points: number }[]>([]);
+export const usersInRoomAtom = atom<{ pseudo: string; role: string; points: number, alive: boolean }[]>([]);
 
 export const roomIdAtom = atom<string>("")
 
@@ -25,7 +25,7 @@ export const quizParamsData = atom<QuizParams>({
     limit: 5,
     category: QuizCategory.cinema,
     difficulty: QuizDifficulty.facile,
-    gamemode: QuizGameMode.classic,
+    gamemode: QuizGameMode.normal,
 });
   
 export const remainingTimeAtom = atom<number>(0)
@@ -33,3 +33,5 @@ export const remainingTimeAtom = atom<number>(0)
 export const isTimeUpAtom = atom<boolean>(false)
 
 export const lisPublicRoomAtom = atom<boolean>(false) 
+
+export const isAliveAtom = atom<boolean>(true)

@@ -7,3 +7,7 @@ export const nextQuestionForTimer = (roomId: string) => {
 export const restartGame = (roomId: string) => {
   socket.emit('restartGame', roomId);
 };
+
+export const returnLobby = (roomId: string) => {
+  socket.emit('leaveRoom', roomId); 
+};

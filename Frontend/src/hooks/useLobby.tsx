@@ -6,7 +6,8 @@ import { useAtom } from "jotai";
 import { availableRoomsAtom, currentviewEtat, etatRoom, isPrivateAtom, isTimeUpAtom, messageServer, pin, quizParamsData, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms";
 import { useNavigate } from "react-router";
 // import { getQuizQuestionsRequest } from "../api/gameApi";
-import { questionAtom } from "../atoms/gameAtom";
+import { questionAtom, roomGamemodeAtom } from "../atoms/gameAtom";
+import { QuizGameMode } from "../types/quiz.enum";
 
 const useLobby = () => {
   const [pseudo, setPseudo] = useAtom(userPseudo)
@@ -22,6 +23,7 @@ const useLobby = () => {
   const [, setRemainingTime] = useAtom(remainingTimeAtom);
   const [, setIsTimeUp] = useAtom(isTimeUpAtom)
     const [, setQuestions] = useAtom(questionAtom)
+  const [,setGamemode] = useAtom(roomGamemodeAtom)
   
 
   // const [lisPublicRoom, setLisPublicRoom] = useAtom(lisPublicRoomAtom); 
@@ -48,8 +50,9 @@ const useLobby = () => {
       console.log("Je suis les rooms disponibles", availableRoomsAtom)
     });
 
-    socket.on("roomJoined", (data: { success:boolean, roomId: string; users: { pseudo: string, role: string, points:number }[], roomPin: string | null }) => {
+    socket.on("roomJoined", (data: { success:boolean, roomId: string; users: { pseudo: string, role: string, points:number, alive:boolean }[], gamemode: QuizGameMode , roomPin: string | null }) => {
       setRoomId(data.roomId);
+      setGamemode(data.gamemode)
       setUsersInRoom(data.users);
       setRoomPinDisplay(data.roomPin)
       setIsInRoom(true);  
@@ -61,9 +64,10 @@ const useLobby = () => {
       setMessage(data);
     });
     
-    socket.on('roomCreated', ({ roomId, roomPin, users }) => {
+    socket.on('roomCreated', ({ roomId, roomPin, users, gamemode }) => {
       console.log(`Room créée: ${roomId}`);
       setRoomPinDisplay(roomPin); 
+      setGamemode(gamemode)
       setUsersInRoom(users)
     });
 
@@ -72,7 +76,7 @@ const useLobby = () => {
   });
 
 
-    socket.on("updateUsers", (users: { pseudo: string, socketId: string, role: string, points:number }[]) => {
+    socket.on("updateUsers", (users: { pseudo: string, socketId: string, role: string, points:number, alive: boolean }[]) => {
       setUsersInRoom(users);
     });
 

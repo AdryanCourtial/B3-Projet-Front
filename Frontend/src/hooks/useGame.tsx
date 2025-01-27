@@ -1,21 +1,18 @@
     import { useAtom } from "jotai"
     import { useEffect } from "react"
-    import { answerChoosedAtom, questionAtom, questionIndexAtom, quizStatusAtom, randomizeArrayAswerAtom } from "../atoms/gameAtom"
-    // import { getQuizQuestionsRequest } from "../api/gameApi"
-    import useToaster from "./useToaster"
-    import { redirect } from "react-router"
+    import { answerChoosedAtom, gameStatisticsAtom, questionAtom, questionIndexAtom, quizStatusAtom, randomizeArrayAswerAtom } from "../atoms/gameAtom"
+    import {  useNavigate } from "react-router"
     import { socket } from "../config/socket.config"
-    import { string } from "three/webgpu"
-    import { isTimeUpAtom, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms"
-    import { nextQuestionForTimer, restartGame } from "../api/gameApi"
+    import { isAliveAtom, isTimeUpAtom, remainingTimeAtom, roomIdAtom, userPseudo, usersInRoomAtom } from "../atoms/UserAtoms"
+    import { nextQuestionForTimer, restartGame, returnLobby } from "../api/gameApi"
 
 
     export const useGame = () => {
 
         const [questions, setQuestions] = useAtom(questionAtom)
         const [questionIndex, setQuestionIndex] = useAtom(questionIndexAtom)
-        const [quizStatus, setQuizStatus] = useAtom(quizStatusAtom)
-        const [answerChoosed, setAnswerChoosed] = useAtom(answerChoosedAtom)
+        const [, setQuizStatus] = useAtom(quizStatusAtom)
+        const [, setAnswerChoosed] = useAtom(answerChoosedAtom)
         const [, randomizeAnswer] = useAtom(randomizeArrayAswerAtom)
         const [user] = useAtom(userPseudo)
         const [roomId] = useAtom(roomIdAtom)
@@ -23,10 +20,29 @@
         const [, setIsTimeUp] = useAtom(isTimeUpAtom)
         const [, setUsersInRoom] = useAtom(usersInRoomAtom)
 
+        const [, setGameStatistics] = useAtom(gameStatisticsAtom)
+        const [, setIsAlive] = useAtom(isAliveAtom)
+        const navigate = useNavigate()
 
-        const { useToast } = useToaster()
+
 
         useEffect(() => {
+
+
+            socket.on('playerEliminated', ({ message }) => {
+                console.log(message);
+                alert(message);
+
+                setIsAlive(false); 
+            });
+
+
+            socket.on('gameOver', ({ message, statistics }) => {
+                console.log(message); 
+                setQuizStatus('finish'); 
+                setGameStatistics(statistics); 
+
+            });
 
             socket.on("gameRestarted", ({ roomState }) => {
                 setQuizStatus("question");
@@ -35,6 +51,8 @@
                 setQuestions(roomState.questions);
                 setRemainingTime(30);  
                 setIsTimeUp(false);
+                setIsAlive(true); 
+
                 setUsersInRoom(roomState.users); 
                 console.log("Le jeu a redémarré !");
             });
@@ -64,15 +82,21 @@
                 randomizeAnswer(); 
             });
 
-            socket.on('quizFinished', () => {
+            socket.on('quizFinished', ({ message, statistics }) => {
+                console.log(message);
+                console.log(statistics); 
+        
                 setQuizStatus('finish'); 
+                setGameStatistics(statistics); 
             });
+        
         
             return () => {
                 socket.off("updateQuestion");
                 socket.off('quizFinished');
                 socket.off("updateUsers");
                 socket.off("gameRestarted");
+                socket.off('gameOver');
 
             };
         }, [
@@ -83,7 +107,8 @@
             setRemainingTime,
             setIsTimeUp,
             setUsersInRoom,
-            randomizeAnswer
+            randomizeAnswer,
+            setGameStatistics
         ]);
         
     
@@ -124,11 +149,17 @@
         restartGame(roomId)
     }
 
+    const handleLeaveRoom = () => {
+        returnLobby(roomId)
+        navigate('/'); 
+    };
+
 
     return {
         handleNextQuestion,
         nextQuestion,
         onAnswerPressed,
-        handleRestartGame
+        handleRestartGame,
+        handleLeaveRoom
     };
 };

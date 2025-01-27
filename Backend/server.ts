@@ -10,6 +10,7 @@ import { UserRole } from './types/role.enum';
 import { GameState } from './types/game.enum';
 import { Room } from './types/room.interface';
 import { QuizData } from './types/quiz.interface';
+import { Difficulty } from './types/difficulty.enum';
 
 const app = express();
 const server = createServer(app); 
@@ -60,20 +61,28 @@ io.on('connection', (socket) => {
 
     axios.get(`https://quizzapi.jomoreschi.fr/api/v1/quiz?category=${quizParams.category}&difficulty=${quizParams.difficulty}&limit=${quizParams.limit}`)
       .then((response) => {
-        const quizData: QuizData = response.data;  // L'API devrait répondre sous cette forme
-        rooms[roomId].questions = quizData; // Stockage dans la room
-        console.log('Questions stockées:', quizData.quizzes);    
-        console.log('Questions all:', quizData);       // io.to(roomId).emit('dataResponseQuiz', response.data);
+        const quizData: QuizData = response.data; 
+        
+        quizData.quizzes = quizData.quizzes.map((q) => ({
+          ...q,
+          stats: {
+              correct: 0,
+              choices: {} 
+          }
+      }));
+
+        rooms[roomId].questions = quizData;
       })
       .catch((error) => {
-          console.log('Erreur de récupération des questions', error);
+        console.log('Erreur de récupération des questions', error);
       });
-
-    socket.join(roomId); 
-
-    io.to(roomId).emit('message', `${pseudo} a créé la room avec les paramètres: ${JSON.stringify(quizParams)}`);
-    socket.emit('roomCreated', { roomId, roomPin, users: rooms[roomId].users });
-
+      
+      socket.join(roomId); 
+      
+      io.to(roomId).emit('message', `${pseudo} a créé la room avec les paramètres: ${JSON.stringify(quizParams)}`);
+      socket.emit('roomCreated', { roomId, roomPin, users: rooms[roomId].users, gamemode: quizParams.gamemode,});
+      
+      console.log("je suis la room", rooms)
   });
 
   socket.on('joinRoom', (roomId: string, pseudo: string) => {
@@ -105,7 +114,7 @@ io.on('connection', (socket) => {
       console.log('Utilisateurs dans la room après ajout:', room.users);
 
       io.to(roomId).emit('updateUsers', room.users);
-      socket.emit('roomJoined', { roomId: room.name, users: room.users, currentQuestionIndex: room.currentQuestionIndex, currentQuestion: room.questions.quizzes[room.currentQuestionIndex]  });
+      socket.emit('roomJoined', { roomId: room.name, users: room.users, gamemode: room.options.gamemode, currentQuestionIndex: room.currentQuestionIndex, currentQuestion: room.questions.quizzes[room.currentQuestionIndex]  });
 
     } else {
       socket.emit('error', { success: false, message:'La room n\'existe pas.',});
@@ -176,7 +185,7 @@ io.on('connection', (socket) => {
       io.to(roomFound.room_id).emit('message', `${pseudo} a rejoint la room`);
 
       io.to(roomFound.room_id).emit('updateUsers', roomFound.users);
-        socket.emit('roomJoined', { roomId: roomFound.name, users: roomFound.users, roomPin: roomFound.room_pin, currentQuestionIndex: roomFound.currentQuestionIndex, currentQuestion: roomFound.questions.quizzes[roomFound.currentQuestionIndex] });
+        socket.emit('roomJoined', { roomId: roomFound.name, users: roomFound.users, gamemode: roomFound.options.gamemode, roomPin: roomFound.room_pin, currentQuestionIndex: roomFound.currentQuestionIndex, currentQuestion: roomFound.questions.quizzes[roomFound.currentQuestionIndex] });
 
 
     } else {
@@ -222,8 +231,17 @@ io.on('connection', (socket) => {
         const countQuestion = room.questions.count - 1
           if (room.currentQuestionIndex >= countQuestion) {
             room.gameState = GameState.end; 
-            io.to(roomId).emit('quizFinished', 'Le quiz est terminé.'); 
 
+            const statistics = room.questions.quizzes.map((q) => ({
+              question: q.question,
+              correctAnswer: q.answer,
+              stats: q.stats, 
+          }));
+
+          io.to(roomId).emit('quizFinished', {
+            message: 'Le quiz est terminé.',
+            statistics: statistics,
+          });
             return; 
         }
   
@@ -390,43 +408,113 @@ io.on('connection', (socket) => {
       }
     });
 
-
-
     socket.on('verifAnswer', (data) => {
-      const { roomId ,answer, user, questionIndex, timeStamp } = data;
-
-      console.log(`L'utilisateur : ${data.user} a répondu : ${answer}`);
-
-      const room = rooms[data.roomId]; 
+      const { roomId, answer, user, questionIndex, timeStamp } = data;
+  
+      console.log(`L'utilisateur : ${user} a répondu : ${answer}`);
+  
+      const room = rooms[roomId];
       if (!room) {
-        console.log(`Room non trouvée pour l'utilisateur : ${user}`);
-        return;
+          console.log(`Room non trouvée pour l'utilisateur : ${user}`);
+          return;
       }
-
+  
       const currentQuestion = room.questions?.quizzes?.[questionIndex];
-      
       if (!currentQuestion) {
-        console.log(`Question non trouvée pour l'index ${questionIndex} dans la room ${roomId}`);
-        return;
+          console.log(`Question non trouvée pour l'index ${questionIndex} dans la room ${roomId}`);
+          return;
       }
-      
-      const correctAnswer = currentQuestion.answer; 
-
-      let points = 0;
-
-      if (answer && answer === correctAnswer) {
-        points = Math.max(0, 1000 - (30 - timeStamp) * 33);
-        console.log(`L'utilisateur a gagné ${points} points ! et a repondu en ${timeStamp} secondes`);
+  
+      // Met à jour les statistiques de la question
+      if (!currentQuestion.stats.choices[answer]) {
+          currentQuestion.stats.choices[answer] = 0;
       }
-      
-      const userIndex = room.users.findIndex(u => u.pseudo === user);
-      if (userIndex !== -1) {
-        room.users[userIndex].points += points;
-        console.log(`je suis le contenue du user ${room.users[userIndex].points}`)
+      currentQuestion.stats.choices[answer] += 1;
+  
+      if (answer === currentQuestion.answer) {
+          currentQuestion.stats.correct += 1;
       }
+  
+      const userIndex = room.users.findIndex((u) => u.pseudo === user);
+      if (userIndex === -1) {
+          console.log(`Utilisateur non trouvé dans la room ${roomId}`);
+          return;
+      }
+  
+      const correctAnswer = currentQuestion.answer;
+  
+      if (room.options.gamemode === Difficulty.mort_subite) {
+          if (answer !== correctAnswer) {
+              room.users[userIndex].alive = false; 
+              room.users[userIndex].points = questionIndex + 1; 
+              console.log(`${user} est éliminé à la question ${questionIndex + 1}.`);
 
-      io.to(data.roomId).emit('updateUsers', room.users);
-    });
+              io.to(room.users[userIndex].uuid).emit('playerEliminated', {
+                message: `Vous avez été éliminé à la question ${questionIndex + 1}.`,
+            })
+          } else {
+              console.log(`${user} a survécu à la question.`);
+          }
+  
+          io.to(roomId).emit('updateUsers', room.users);
+  
+
+
+          const allDead = room.users.every((u) => !u.alive);
+
+
+          const statistics = room.questions.quizzes.map((q) => ({
+            question: q.question,
+            correctAnswer: q.answer,
+            stats: q.stats, 
+          }));
+
+          if (allDead) {
+              room.gameState = GameState.end;
+              setTimeout(() => {
+                io.to(roomId).emit('gameOver', {
+                  message: 'Tous les joueurs sont morts. Game over !',
+                  statistics: statistics,
+              });              }, 100); 
+              return;
+          }
+      } else if (room.options.gamemode === Difficulty.normal) {
+          let points = 0;
+          if (answer === correctAnswer) {
+              points = Math.max(0, 1000 - (30 - timeStamp) * 33);
+              console.log(`${user} a gagné ${points} points et a répondu en ${timeStamp} secondes.`);
+          }
+          room.users[userIndex].points += points;
+      }
+  
+      io.to(roomId).emit('updateUsers', room.users);
+  });
+  
+  
+
+
+
+
+  socket.on('leaveRoom', (roomId) => {
+    const room = rooms[roomId];
+    if (room) {
+        const userIndex = room.users.findIndex(user => user.uuid === socket.id);
+        if (userIndex !== -1) {
+            const disconnectedUser = room.users[userIndex];
+            room.users.splice(userIndex, 1); 
+
+            console.log(`${disconnectedUser.pseudo} a quitté la room ${roomId}.`);
+
+            if (room.users.length === 0) {
+                delete rooms[roomId];
+                console.log(`Room ${roomId} supprimée car elle est vide.`);
+            } else {
+                io.to(roomId).emit('updateUsers', room.users); 
+            }
+        }
+    }
+});
+
 
 });
 
